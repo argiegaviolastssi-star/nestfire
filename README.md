@@ -17,7 +17,7 @@ NPM library to integrate Firebase with NestJS easily.
 ## 📦 Installation
 
 ```bash
-npm install nestfire firebase-admin firebase-functions dotenv
+npm install nestfire
 ```
 <br>
 
@@ -45,9 +45,6 @@ MIIEv...
 
 # Or point to a file path
 SERVICE_ACCOUNT_KEY_PATH="./serviceAccountKey.json"
-
-# Firebase project ID
-FIREBASE_PROJECT_ID="my-project-id"
 ```
 
 > **Note:** You must load `.env` in your code (e.g., using [dotenv](https://www.npmjs.com/package/dotenv)).
@@ -95,12 +92,12 @@ export class BooksService {
   ) {}
 
   async addBook(dto: CreateBookDto) {
-    const id = this.firebase.firestore.collection('books').doc().id;
-    await this.firebase.firestore.collection('books').doc(id).set(dto);
+    const id = this.firebase.Firestore.collection('books').doc().id;
+    await this.firebase.Firestore.collection('books').doc(id).set(dto);
   }
 
   async findAllBooks() {
-    const snapshot = await this.firebase.firestore.collection('books').get();
+    const snapshot = await this.firebase.Firestore.collection('books').get();
     return snapshot.docs.map(doc => doc.data());
   }
 }
@@ -233,15 +230,14 @@ export class OrdersModule {}
 - **`createFirebaseHttpsV2(options)`**: deploys v2 HTTP function with `{ region, memory, timeoutSeconds, module, fnName }`.  <br><br>
 - **`eventTrigger(eventType, path, handler, options)`**: wraps Firestore triggers (`onCreate`, `onUpdate`, etc.).  <br><br>
 
-See the `src/` folder for more examples and detailed docs.
 <br>
 
 
 ## 🤝 Contributing
 
 PRs and issues are welcome! Please follow TypeScript style and add tests for new features.
-<br>
 
+<br>
 
 ## 📝 License
 
