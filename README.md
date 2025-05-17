@@ -4,11 +4,14 @@ NPM library to integrate Firebase with NestJS easily.
 
 **Main features:**
 
-- 🔌 **`FirebaseModule`**: Inject Firebase SDK services (Firestore, Auth, Storage, etc.) into your providers.  
-- 🚀 **Cloud Functions HTTP**:  
+- 🔌 **`FirebaseModule`**: Inject Firebase SDK services (Firestore, Auth, Storage, etc.) into your providers.  <br><br>
+
+- 🚀 **Cloud Functions HTTP**: 
   - **v1** with `createFirebaseHttpsV1`  
-  - **v2** with `createFirebaseHttpsV2`  
-- 🔔 **Firestore Triggers v1** using `eventTrigger`
+
+  - **v2** with `createFirebaseHttpsV2`   <br><br>
+
+- 🔔 **Firestore Triggers v1** using `eventTrigger`  <br><br>
 
 ---
 
@@ -17,6 +20,7 @@ NPM library to integrate Firebase with NestJS easily.
 ```bash
 npm install nestfire firebase-admin firebase-functions dotenv
 ```
+<br>
 
 ---
 
@@ -50,6 +54,8 @@ FIREBASE_PROJECT_ID="my-project-id"
 
 > **Note:** You must load `.env` in your code (e.g., using [dotenv](https://www.npmjs.com/package/dotenv)).
 
+<br>
+
 ---
 
 ## ⚙️ Configuration in NestJS Modules
@@ -72,6 +78,7 @@ import { BooksService } from './books.service';
 })
 export class BooksModule {}
 ```
+<br>
 
 ---
 
@@ -102,6 +109,7 @@ export class BooksService {
   }
 }
 ```
+<br>
 
 ---
 
@@ -137,6 +145,7 @@ export const ordersApi: HttpFunction = createFirebaseHttpsV2({
   fnName: 'ordersApi',
 });
 ```
+<br>
 
 ---
 
@@ -160,6 +169,7 @@ export const orderTrigger: Trigger = {
     },
     { memory: '256MB', minInstances: 1 },
   ),
+  
 
   onUpdate: eventTrigger(
     'onUpdate',
@@ -196,6 +206,7 @@ export async function inventoryRestockTriggerOnCreate(
   await inventoryService.notifyRestock(item.productId, item.quantity);
 }
 ```
+<br>
 
 ---
 
@@ -219,23 +230,26 @@ import { ConfigModule } from '@nestjs/config';
 })
 export class OrdersModule {}
 ```
+<br>
 
 ---
 
 ## 📖 API Reference
 
-- **`FirebaseModule`**: injects `admin.auth()`, `admin.firestore()`, `admin.storage()`, etc.  
-- **`createFirebaseHttpsV1(memory, module)`**: deploys v1 HTTP function.  
-- **`createFirebaseHttpsV2(options)`**: deploys v2 HTTP function with `{ region, memory, timeoutSeconds, module, fnName }`.  
-- **`eventTrigger(eventType, path, handler, options)`**: wraps Firestore triggers (`onCreate`, `onUpdate`, etc.).
+- **`FirebaseModule`**: injects `admin.auth()`, `admin.firestore()`, `admin.storage()`, etc.  <br><br>
+- **`createFirebaseHttpsV1(memory, module)`**: deploys v1 HTTP function.  <br><br>
+- **`createFirebaseHttpsV2(options)`**: deploys v2 HTTP function with `{ region, memory, timeoutSeconds, module, fnName }`.  <br><br>
+- **`eventTrigger(eventType, path, handler, options)`**: wraps Firestore triggers (`onCreate`, `onUpdate`, etc.).  <br><br>
 
 See the `src/` folder for more examples and detailed docs.
+<br>
 
 ---
 
 ## 🤝 Contributing
 
 PRs and issues are welcome! Please follow TypeScript style and add tests for new features.
+<br>
 
 ---
 
