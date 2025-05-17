@@ -4,16 +4,15 @@ NPM library to integrate Firebase with NestJS easily.
 
 **Main features:**
 
-- 🔌 **`FirebaseModule`**: Inject Firebase SDK services (Firestore, Auth, Storage, etc.) into your providers.  <br><br>
+- 🔌 **`FirebaseModule`**: Inject Firebase SDK services (Firestore, Auth, Storage, etc.) into your providers.
 
 - 🚀 **Cloud Functions HTTP**: 
   - **v1** with `createFirebaseHttpsV1`  
 
-  - **v2** with `createFirebaseHttpsV2`   <br><br>
+  - **v2** with `createFirebaseHttpsV2`
 
-- 🔔 **Firestore Triggers v1** using `eventTrigger`  <br><br>
+- 🔔 **Firestore Triggers v1** using `eventTrigger`
 
----
 
 ## 📦 Installation
 
@@ -22,7 +21,6 @@ npm install nestfire firebase-admin firebase-functions dotenv
 ```
 <br>
 
----
 
 ## ⚙️ Environment Variables
 
@@ -56,7 +54,6 @@ FIREBASE_PROJECT_ID="my-project-id"
 
 <br>
 
----
 
 ## ⚙️ Configuration in NestJS Modules
 
@@ -80,7 +77,6 @@ export class BooksModule {}
 ```
 <br>
 
----
 
 ## 🚀 Usage
 
@@ -111,7 +107,6 @@ export class BooksService {
 ```
 <br>
 
----
 
 ### 2. Cloud Functions HTTP
 
@@ -147,7 +142,6 @@ export const ordersApi: HttpFunction = createFirebaseHttpsV2({
 ```
 <br>
 
----
 
 ### 3. Firestore Triggers v1
 
@@ -208,7 +202,6 @@ export async function inventoryRestockTriggerOnCreate(
 ```
 <br>
 
----
 
 ## 📁 Example NestJS Module
 
@@ -232,7 +225,6 @@ export class OrdersModule {}
 ```
 <br>
 
----
 
 ## 📖 API Reference
 
@@ -244,14 +236,12 @@ export class OrdersModule {}
 See the `src/` folder for more examples and detailed docs.
 <br>
 
----
 
 ## 🤝 Contributing
 
 PRs and issues are welcome! Please follow TypeScript style and add tests for new features.
 <br>
 
----
 
 ## 📝 License
 
