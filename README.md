@@ -26,18 +26,20 @@ Put these in your `.env` file (at project root):
 
 ```bash
 # Either embed the JSON key directly
-SERVICE_ACCOUNT_KEY="{\
-  \"type\": \"service_account\",\
-  \"project_id\": \"my-project-id\",\
-  \"private_key_id\": \"ABCD1234...\",\
-  \"private_key\": \"-----BEGIN PRIVATE KEY-----\\nMIIEv...\\n-----END PRIVATE KEY-----\\n\",\
-  \"client_email\": \"firebase-adminsdk@my-project.iam.gserviceaccount.com\",\
-  \"client_id\": \"1234567890\",\
-  \"auth_uri\": \"https://accounts.google.com/o/oauth2/auth\",\
-  \"token_uri\": \"https://oauth2.googleapis.com/token\",\
-  \"auth_provider_x509_cert_url\": \"https://www.googleapis.com/oauth2/v1/certs\",\
-  \"client_x509_cert_url\": \"https://www.googleapis.com/robot/v1/metadata/x509/...\"\
-}"
+SERVICE_ACCOUNT_KEY='{
+  "type": "service_account",
+  "project_id": "my-project-id",
+  "private_key_id": "ABCD1234...",
+  "private_key": "-----BEGIN PRIVATE KEY-----
+MIIEv...
+-----END PRIVATE KEY-----",
+  "client_email": "firebase-adminsdk@my-project.iam.gserviceaccount.com",
+  "client_id": "1234567890",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/..."
+}'
 
 # Or point to a file path
 SERVICE_ACCOUNT_KEY_PATH="./serviceAccountKey.json"
@@ -52,23 +54,23 @@ FIREBASE_PROJECT_ID="my-project-id"
 
 ## ⚙️ Configuration in NestJS Modules
 
-Import `FirebaseModule` into **any** module where you need Firebase, not just the root module.
+Import `FirebaseModule` into **any** module where you need Firebase.
 
 ```ts
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { FirebaseModule } from 'nestfire';
-import { UserService } from './user.service';
+import { BooksService } from './books.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),   // loads .env
-    FirebaseModule,           // makes Firebase available here
+    ConfigModule.forRoot(),
+    FirebaseModule,
   ],
-  providers: [UserService],
-  exports: [UserService],
+  providers: [BooksService],
+  exports: [BooksService],
 })
-export class UserModule {}
+export class BooksModule {}
 ```
 
 ---
@@ -80,23 +82,23 @@ export class UserModule {}
 ```ts
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { Firebase } from 'nestfire';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateBookDto } from './dto/create-book.dto';
 
 @Injectable()
-export class UserService {
+export class BooksService {
   constructor(
     @Inject(forwardRef(() => Firebase))
     private readonly firebase: Firebase,
   ) {}
 
-  async registerUser(dto: CreateUserDto) {
-    const id = this.firebase.firestore.collection('users').doc().id;
-    await this.firebase.firestore.collection('users').doc(id).set(dto);
+  async addBook(dto: CreateBookDto) {
+    const id = this.firebase.firestore.collection('books').doc().id;
+    await this.firebase.firestore.collection('books').doc(id).set(dto);
   }
 
-  async listUsers() {
-    const snap = await this.firebase.firestore.collection('users').get();
-    return snap.docs.map(d => d.data());
+  async findAllBooks() {
+    const snapshot = await this.firebase.firestore.collection('books').get();
+    return snapshot.docs.map(doc => doc.data());
   }
 }
 ```
@@ -105,8 +107,8 @@ export class UserService {
 
 ### 2. Cloud Functions HTTP
 
-Use these helpers to deploy Firebase Functions (v1 or v2 generational API).  
-**Important:** the exported function name (e.g. `booksApi`) must match the controller name in that module. Only the controllers in the module you pass will be deployed.
+Use helpers to deploy Firebase HTTP Functions v1 or v2.  
+**Important:** the exported function name must match the controller name in that module.
 
 #### v1
 
@@ -115,7 +117,7 @@ import { HttpsFunction, createFirebaseHttpsV1 } from 'nestfire';
 import { BooksModule } from './modules/books/books.module';
 
 // Deploys an HTTP function with 128MB memory.
-// Endpoint path will be `/booksApi` by default.
+// Endpoint path will be `/booksApi`.
 export const booksApi: HttpsFunction =
   createFirebaseHttpsV1('128MB', BooksModule);
 ```
@@ -124,15 +126,15 @@ export const booksApi: HttpsFunction =
 
 ```ts
 import { HttpFunction, createFirebaseHttpsV2 } from 'nestfire';
-import { CoursesModule } from './modules/courses/courses.module';
+import { OrdersModule } from './modules/orders/orders.module';
 
-// Deploys a 2nd-gen function in us-central1 with 256MB memory and 120s timeout.
-export const coursesApi: HttpFunction = createFirebaseHttpsV2({
-  region: 'us-central1',    // region
-  memory: '256MB',          // memory
-  timeoutSeconds: 120,      // timeout
-  module: CoursesModule,    // module with controllers
-  fnName: 'coursesApi',     // exported name & endpoint path
+// Deploys a 2nd-gen function in europe-west1 with 256MB memory and 60s timeout.
+export const ordersApi: HttpFunction = createFirebaseHttpsV2({
+  region: 'europe-west1',
+  memory: '256MB',
+  timeoutSeconds: 60,
+  module: OrdersModule,
+  fnName: 'ordersApi',
 });
 ```
 
@@ -140,61 +142,58 @@ export const coursesApi: HttpFunction = createFirebaseHttpsV2({
 
 ### 3. Firestore Triggers v1
 
-Register Firestore document triggers. Example for `onCreate` and `onUpdate`:
+Register Firestore triggers. Example for order creations and updates:
 
 ```ts
 import { Trigger, eventTrigger } from 'nestfire';
 import { EventContext, Change, DocumentSnapshot } from 'firebase-functions/v1';
 
-export const enrollmentTrigger: Trigger = {
+export const orderTrigger: Trigger = {
   onCreate: eventTrigger(
     'onCreate',
-    'projects/{projectId}/courses/{courseId}/enrollments/{enrollmentId}',
-    async function courseEnrollmentTriggerOnCreate(
+    'projects/{projectId}/orders/{orderId}',
+    async function orderCreatedTriggerOnCreate(
       snapshot: DocumentSnapshot,
       context: EventContext
     ): Promise<void> {
-      // your logic here
+      // e.g., send order confirmation email
     },
-    { memory: '512MB', minInstances: 1 },
+    { memory: '256MB', minInstances: 1 },
   ),
 
   onUpdate: eventTrigger(
     'onUpdate',
-    'projects/{projectId}/courses/{courseId}/enrollments/{enrollmentId}',
-    async function courseEnrollmentTriggerOnUpdate(
+    'projects/{projectId}/orders/{orderId}',
+    async function orderUpdatedTriggerOnUpdate(
       change: Change<DocumentSnapshot>,
       context: EventContext
     ): Promise<void> {
       const before = change.before.data();
-      const after  = change.after.data();
-      // your logic here
+      const after = change.after.data();
+      // e.g., notify if status changed
     },
-    { memory: '512MB', minInstances: 1 },
+    { memory: '256MB', minInstances: 1 },
   ),
 };
 ```
 
-Also an example for language courses:
+And example for inventory restocks:
 
 ```ts
 import { DocumentSnapshot, EventContext } from 'firebase-functions/v1';
 import { getModule } from 'nestfire';
-import { LanguageCourseTriggerModule } from './language-course-trigger.module';
-import { TranslateService } from 'src/modules/translate/translate.service';
-import { CourseService } from 'src/modules/course/course.service';
+import { InventoryTriggerModule } from './inventory-trigger.module';
+import { InventoryService } from 'src/modules/inventory/inventory.service';
 
-export async function languageCourseTriggerOnCreate(
+export async function inventoryRestockTriggerOnCreate(
   snapshot: DocumentSnapshot,
   context: EventContext
 ): Promise<void> {
-  const mod = await getModule(LanguageCourseTriggerModule);
-  const translate = mod.get(TranslateService);
-  const courseSvc  = mod.get(CourseService);
+  const mod = await getModule(InventoryTriggerModule);
+  const inventoryService = mod.get(InventoryService);
 
-  const data = snapshot.data();
-  await translate.autoTranslate(data.text);
-  await courseSvc.updateCourse(context.params.courseId, { translated: true });
+  const item = snapshot.data();
+  await inventoryService.notifyRestock(item.productId, item.quantity);
 }
 ```
 
@@ -204,21 +203,21 @@ export async function languageCourseTriggerOnCreate(
 
 ```ts
 import { Module } from '@nestjs/common';
-import { UserController } from './user.controller';
-import { UserService }    from './user.service';
+import { OrdersController } from './orders.controller';
+import { OrdersService } from './orders.service';
 import { FirebaseModule } from 'nestfire';
-import { ConfigModule }   from 'src/config/config.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),  // loads .env
-    FirebaseModule,          // injects Firebase into this module
+    ConfigModule.forRoot(),
+    FirebaseModule,
   ],
-  controllers: [UserController],
-  providers:   [UserService],
-  exports:     [UserService],
+  controllers: [OrdersController],
+  providers: [OrdersService],
+  exports: [OrdersService],
 })
-export class UserModule {}
+export class OrdersModule {}
 ```
 
 ---
@@ -230,7 +229,7 @@ export class UserModule {}
 - **`createFirebaseHttpsV2(options)`**: deploys v2 HTTP function with `{ region, memory, timeoutSeconds, module, fnName }`.  
 - **`eventTrigger(eventType, path, handler, options)`**: wraps Firestore triggers (`onCreate`, `onUpdate`, etc.).
 
-See the `src/` folder for more examples and in-depth docs.
+See the `src/` folder for more examples and detailed docs.
 
 ---
 
