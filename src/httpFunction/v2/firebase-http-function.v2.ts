@@ -15,7 +15,7 @@ expressServer.use(compression());
  * @param {number} [instances=1] - The minimum number of instances for the function.
  * @returns {HttpsFunction} - The created Firebase HTTPS function.
  */
-export function createHttpsFunction(memory: MemoryOption, module: any, instances: number = 0): HttpsFunction {
+export function createFirebaseHttpsV2(memory: MemoryOption, module: any, instances: number = 0): HttpsFunction {
   return onRequest(
     {
       memory,
