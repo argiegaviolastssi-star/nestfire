@@ -13,6 +13,7 @@ NPM library to integrate Firebase with NestJS easily.
 
 - 🔔 **Firestore Triggers v1** using `eventTrigger`
 
+<br>
 
 ## 📦 Installation
 
@@ -118,7 +119,7 @@ import { BooksModule } from './modules/books/books.module';
 
 // Deploys an HTTP function with 128MB memory.
 // Endpoint path will be `/booksApi`.
-export const booksApi: HttpsFunction =
+export const books: HttpsFunction =
   createFirebaseHttpsV1('128MB', BooksModule);
 ```
 
@@ -228,7 +229,7 @@ export class OrdersModule {}
 - **`FirebaseModule`**: injects `admin.auth()`, `admin.firestore()`, `admin.storage()`, etc.  <br><br>
 - **`createFirebaseHttpsV1(memory, module)`**: deploys v1 HTTP function.  <br><br>
 - **`createFirebaseHttpsV2(options)`**: deploys v2 HTTP function with `{ region, memory, timeoutSeconds, module, fnName }`.  <br><br>
-- **`eventTrigger(eventType, path, handler, options)`**: wraps Firestore triggers (`onCreate`, `onUpdate`, etc.).  <br><br>
+- **`eventTrigger(eventType, path, handler, options)`**: wraps Firestore triggers (`onCreate`, `onUpdate`, etc.).
 
 <br>
 
