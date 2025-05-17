@@ -4,14 +4,13 @@ NPM library to integrate Firebase with NestJS easily.
 
 **Main features:**
 
-- 🔌 **`FirebaseModule`**: Inject Firebase SDK services (Firestore, Auth, Storage, etc.) into your providers.
+-  **FirebaseModule**: Inject Firebase SDK services (Firestore, Auth, Storage, etc.) into your providers.
 
-- 🚀 **Cloud Functions HTTP (for deploy)**: 
-  - **v1** with `createFirebaseHttpsV1`  
+-  **Cloud Functions HTTP (for deploy)**: 
+    Deploy NestJS modules to separate Firebase Functions the easiest way using `createFirebaseHttpsV1` or `createFirebaseHttpsV2`
 
-  - **v2** with `createFirebaseHttpsV2`
-
-- 🔔 **Firestore Triggers v1** using `eventTrigger`
+-  **Firestore Triggers**:
+ Create Firebase Functions that trigger when a document in your database is created or changed using `eventTrigger`.
 
 <br>
 
@@ -25,7 +24,7 @@ npm install nestfire
 
 ## ⚙️ Environment Variables
 
-Put these in your `.env` file (at project root):
+Put these in your `.env` file:
 
 ```bash
 # Either embed the JSON key directly
@@ -70,6 +69,7 @@ import { BooksService } from './books.service';
   ],
   providers: [BooksService],
   exports: [BooksService],
+  controllers: [BooksController],
 })
 export class BooksModule {}
 ```
@@ -128,7 +128,7 @@ You can deploy HTTP functions using `createFirebaseHttpsV1` or `createFirebaseHt
 
 3. Then, in your `index.ts` file, you can create HTTP functions like this:
 
-#### v1
+#### Firebase function v1
 
 ```ts
 import { HttpsFunction, createFirebaseHttpsV1 } from 'nestfire';
@@ -140,7 +140,7 @@ export const books: HttpsFunction =
   createFirebaseHttpsV1('128MB', BooksModule);
 ```
 
-#### v2
+#### Firebase function v2
 
 ```ts
 import { HttpFunction, createFirebaseHttpsV2 } from 'nestfire';
@@ -155,7 +155,7 @@ export const orders: HttpFunction = createFirebaseHttpsV2({
   fnName: 'orders',
 });
 ```
-With those exports in your index.ts firebase will create a function called `books` or `orders` in your Firebase project.
+With those exports in your `index.ts`, Firebase will create a function called `books` or `orders` in your Firebase project when you run the command `firebase deploy --only functions`.
 
 **Tip:** The name of the exported function is best if it matches the name of the controller in that module.
 <br>
@@ -227,7 +227,7 @@ Now you can use `orderTrigger` in your `index.ts` file to deploy the triggers:
 export { orderTrigger } from './src/triggers/order/order.trigger';
 ```
 
-With this export Firebase will create a function called `orderTrigger` in your Firebase project.
+With this export Firebase will create a function called `orderTrigger` in your Firebase project. When you run the command `firebase deploy --only functions`.
 <br>
 
 
