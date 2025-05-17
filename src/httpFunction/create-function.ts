@@ -3,6 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { deleteImportedControllers } from './delete-imported-controllers';
+import { deleteControllerPrefix } from './delete-controller-prefix';
 
 const loadedFunctions: { [key: string]: any } = {};
 
@@ -12,6 +13,7 @@ export async function createFunction(module: any, expressServer: Express): Promi
     return loadedFunctions[moduleName];
   }
   deleteImportedControllers(module);
+  deleteControllerPrefix(module);
   const app: INestApplication = await NestFactory.create(module, new ExpressAdapter(expressServer));
 
   app.useGlobalPipes(new ValidationPipe());
