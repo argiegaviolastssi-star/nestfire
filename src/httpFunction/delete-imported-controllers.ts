@@ -7,7 +7,7 @@ export function deleteImportedControllers(root: any) {
 }
 
 function recursiveDelete(module: any, visited: Set<any>) {
-  if (visited.has(module)){
+  if (visited.has(module)) {
     return;
   }
 

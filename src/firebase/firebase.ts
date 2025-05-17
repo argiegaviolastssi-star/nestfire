@@ -3,7 +3,6 @@ import { Auth, getAuth } from 'firebase-admin/auth';
 import { getApps, initializeApp, App, AppOptions } from 'firebase-admin/app';
 import { Injectable } from '@nestjs/common';
 import { getStorage, Storage } from 'firebase-admin/storage';
-import { ConfigService } from '@nestjs/config';
 import { credential } from 'firebase-admin';
 import * as path from 'path';
 
@@ -14,7 +13,7 @@ export class Firebase {
   private storage: Storage;
   private app: App;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor() {
     this.initializeFirebase();
   }
 
@@ -45,7 +44,7 @@ export class Firebase {
    * If the app is not initialized, it creates a new app instance and sets up Firestore, Storage, and Auth services.
    * It also sets Firestore settings if provided in the configuration.
    */
-  initializeFirebase(): void {
+  private initializeFirebase(): void {
     this.checkFirebaseApp();
     const appName = `app-${Math.random().toString(36).substring(7)}`;
     const firebaseConfig: AppOptions = this.getFirebaseConfig();
@@ -56,8 +55,8 @@ export class Firebase {
       this.storage = getStorage(app);
       this.auth = getAuth(app);
 
-      if (this.configService.get('FIRESTORE_SETTINGS')) {
-        this.firestore.settings(JSON.parse(this.configService.get('FIRESTORE_SETTINGS')));
+      if (process.env.FIRESTORE_SETTINGS) {
+        this.firestore.settings(JSON.parse(process.env.FIRESTORE_SETTINGS));
       }
     }
   }
@@ -94,10 +93,10 @@ export class Firebase {
       credential: credential.applicationDefault(),
     };
 
-    if (this.configService.get('SERVICE_ACCOUNT_KEY')) {
-      firebaseConfig.credential = credential.cert(JSON.parse(this.configService.get('SERVICE_ACCOUNT_KEY')));
+    if (process.env.SERVICE_ACCOUNT_KEY) {
+      firebaseConfig.credential = credential.cert(JSON.parse(process.env.SERVICE_ACCOUNT_KEY));
     } else {
-      firebaseConfig.credential = credential.cert(require(path.resolve(this.configService.get('SERVICE_ACCOUNT_KEY_PATH'))));
+      firebaseConfig.credential = credential.cert(require(path.resolve(process.env.SERVICE_ACCOUNT_KEY_PATH)));
     }
 
     return firebaseConfig;
