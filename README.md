@@ -6,7 +6,7 @@ NPM library to integrate Firebase with NestJS easily.
 
 - 🔌 **`FirebaseModule`**: Inject Firebase SDK services (Firestore, Auth, Storage, etc.) into your providers.
 
-- 🚀 **Cloud Functions HTTP**: 
+- 🚀 **Cloud Functions HTTP (for deploy)**: 
   - **v1** with `createFirebaseHttpsV1`  
 
   - **v2** with `createFirebaseHttpsV2`
@@ -76,9 +76,9 @@ export class BooksModule {}
 <br>
 
 
-## 🚀 Usage
+## 🚀 Firebase Usage
 
-### 1. Injecting Firebase Services
+### 1. Injecting Firebase
 
 ```ts
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
@@ -87,10 +87,7 @@ import { CreateBookDto } from './dto/create-book.dto';
 
 @Injectable()
 export class BooksService {
-  constructor(
-    @Inject(forwardRef(() => Firebase))
-    private readonly firebase: Firebase,
-  ) {}
+  constructor(private readonly firebase: Firebase) {}
 
   async addBook(dto: CreateBookDto) {
     const id = this.firebase.Firestore.collection('books').doc().id;
@@ -103,13 +100,33 @@ export class BooksService {
   }
 }
 ```
+
+Inside Firebase you can access the SDK services like this:
+- `this.firebase.Auth` for `admin.auth()`
+- `this.firebase.Firestore` for `admin.firestore()`
+- `this.firebase.Storage` for `admin.storage()`
+
 <br>
 
 
 ### 2. Cloud Functions HTTP
 
-Use helpers to deploy Firebase HTTP Functions v1 or v2.  
-**Important:** the exported function name must match the controller name in that module.
+You can deploy HTTP functions using `createFirebaseHttpsV1` or `createFirebaseHttpsV2`.
+
+1. In your `firebase.json` file, add the following:
+
+```json
+{
+  "functions": {
+    "source": ".",
+    "runtime": "nodejs22",
+  }
+}
+```
+2. Now you have to create a `index.ts` in the root of your project. This file will be used to deploy your functions.
+
+
+3. Then, in your `index.ts` file, you can create HTTP functions like this:
 
 #### v1
 
@@ -130,20 +147,24 @@ import { HttpFunction, createFirebaseHttpsV2 } from 'nestfire';
 import { OrdersModule } from './modules/orders/orders.module';
 
 // Deploys a 2nd-gen function in europe-west1 with 256MB memory and 60s timeout.
-export const ordersApi: HttpFunction = createFirebaseHttpsV2({
+export const orders: HttpFunction = createFirebaseHttpsV2({
   region: 'europe-west1',
   memory: '256MB',
   timeoutSeconds: 60,
   module: OrdersModule,
-  fnName: 'ordersApi',
+  fnName: 'orders',
 });
 ```
+With those exports in your index.ts firebase will create a function called `books` or `orders` in your Firebase project.
+
+**Tip:** The name of the exported function is best if it matches the name of the controller in that module.
 <br>
 
 
 ### 3. Firestore Triggers v1
 
-Register Firestore triggers. Example for order creations and updates:
+Register Firestore triggers that will be executed when a document is created or updated in Firestore.
+Example for order creations and updates:
 
 ```ts
 import { Trigger, eventTrigger } from 'nestfire';
@@ -180,6 +201,7 @@ export const orderTrigger: Trigger = {
 ```
 
 And example for inventory restocks:
+`order.trigger.ts`
 
 ```ts
 import { DocumentSnapshot, EventContext } from 'firebase-functions/v1';
@@ -198,6 +220,14 @@ export async function inventoryRestockTriggerOnCreate(
   await inventoryService.notifyRestock(item.productId, item.quantity);
 }
 ```
+
+Now you can use `orderTrigger` in your `index.ts` file to deploy the triggers:
+
+```ts
+export { orderTrigger } from './src/triggers/order/order.trigger';
+```
+
+With this export Firebase will create a function called `orderTrigger` in your Firebase project.
 <br>
 
 
