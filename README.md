@@ -1,11 +1,11 @@
 
-<div style="text-align: center;">
-  <img src="./assets/nestfire_logo.png" alt="NestFire Logo" width="200" />
-  <h1 style="font-size: 3em; margin-top: 0.5em;">NestFire</h1>
-</div>
+<p align="center">
+  <img src="./assets/nestfire_logo.png" alt="NestFire Logo" width="120" />
+</p>
 
+<h1 align="center">NestFire</h1>
 
-NPM library to integrate Firebase with NestJS easily.
+<p align="center">NPM library to integrate Firebase with NestJS easily.</p>
 
 **Main features:**
 
