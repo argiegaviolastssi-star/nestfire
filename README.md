@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="./assets/nestfire_logo.png" alt="NestFire Logo" width="120" />
+  <img src="./assets/nestfire_logo.png" alt="NestFire Logo" width="190" />
 </p>
 
 <h1 align="center">NestFire</h1>
