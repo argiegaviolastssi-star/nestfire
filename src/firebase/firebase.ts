@@ -1,5 +1,5 @@
 import { Firestore, getFirestore } from 'firebase-admin/firestore';
-import { Auth, getAuth } from 'firebase-admin/auth';
+import { Auth, getAuth, TenantAwareAuth } from 'firebase-admin/auth';
 import { getApps, initializeApp, App, AppOptions } from 'firebase-admin/app';
 import { Injectable } from '@nestjs/common';
 import { getStorage, Storage } from 'firebase-admin/storage';
@@ -8,29 +8,41 @@ import * as path from 'path';
 
 @Injectable()
 export class Firebase {
-  private firestore: Firestore;
-  private auth: Auth;
-  private storage: Storage;
-  private app: App;
+  private _firestore: Firestore;
+  private _auth: Auth;
+  private _storage: Storage;
+  private _app: App;
 
   constructor() {
     this.initializeFirebase();
   }
 
-  get Firestore(): Firestore {
-    return this.firestore;
+  /**
+   * Get Firestore instance
+   * @param {string} [databaseId] - Optional databaseId for the Firestore instance. Null databaseId will return the default instance.
+   * @returns {Firestore} - Firestore instance
+   * @memberof Firebase
+   */
+  firestore(databaseId?: string): Firestore {
+    return databaseId ? this._firestore : getFirestore(this._app, databaseId);
   }
 
-  get Auth(): Auth {
-    return this.auth;
+  /**
+   * Get Auth instance
+   * @param {string} [tenancyId] - Optional tenancyId for the Auth instance. Null tenancyId will return the default instance.
+   * @returns {Auth} - Auth instance
+   * @memberof Firebase
+   */
+  auth(tenancyId?: string): Auth | TenantAwareAuth {
+    return tenancyId ? this._auth : this._auth.tenantManager().authForTenant(tenancyId);
   }
 
-  get Storage(): Storage {
-    return this.storage;
+  storage(): Storage {
+    return this._storage;
   }
 
-  get App(): App {
-    return this.app;
+  app(): App {
+    return this._app;
   }
 
   /**
@@ -49,14 +61,14 @@ export class Firebase {
     const appName = `app-${Math.random().toString(36).substring(7)}`;
     const firebaseConfig: AppOptions = this.getFirebaseConfig();
     const app = initializeApp(firebaseConfig, appName);
-    if (!this.app?.name || this.app?.name === '' || this.app?.name !== app?.name) {
-      this.app = app;
-      this.firestore = getFirestore(app);
-      this.storage = getStorage(app);
-      this.auth = getAuth(app);
+    if (!this._app?.name || this._app?.name === '' || this._app?.name !== app?.name) {
+      this._app = app;
+      this._firestore = getFirestore(app);
+      this._storage = getStorage(app);
+      this._auth = getAuth(app);
 
       if (process.env.FIRESTORE_SETTINGS) {
-        this.firestore.settings(JSON.parse(process.env.FIRESTORE_SETTINGS));
+        this._firestore.settings(JSON.parse(process.env.FIRESTORE_SETTINGS));
       }
     }
   }

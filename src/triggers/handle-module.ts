@@ -1,5 +1,5 @@
-import { INestApplication } from "@nestjs/common";
-import { NestFactory } from "@nestjs/core";
+import { INestApplication } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 
 const appCache = new Map<string, INestApplication>();
 export async function getModule(module: any): Promise<INestApplication> {
@@ -13,5 +13,7 @@ export async function getModule(module: any): Promise<INestApplication> {
     return appCache.get(moduleName)!;
   } catch (error) {
     appCache.delete(moduleName);
+    console.error(`Error creating trigger module: ${moduleName}`, error);
+    return null;
   }
 }
