@@ -2,7 +2,7 @@ import express from 'express';
 import { Express } from 'express-serve-static-core';
 import compression from 'compression';
 import { HttpsFunction, HttpsOptions, onRequest } from 'firebase-functions/v2/https';
-import { createFunction } from '../create-function';
+import { createFunction } from '../create-function'; 
 
 const expressServer: Express = express();
 expressServer.use(compression());

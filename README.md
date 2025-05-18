@@ -1,4 +1,7 @@
-# NestFire
+<h1>
+  <img src="./assets/nestfire_logo.png" alt="NestFire Logo" width="150" style="vertical-align: middle; margin-right: 10px;" />
+  NestFire
+</h1>
 
 NPM library to integrate Firebase with NestJS easily.
 
