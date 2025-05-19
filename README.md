@@ -27,7 +27,7 @@
 ```bash
 npm install nestfire
 ```
-> **Note:**
+> **Steps:**
 > 1. Run `firebase init` to set up Firebase in your project.
 > 2. Delete de `functions` folder created by firebase init.
 > 3. Add in package.json  `"main": "dist/index.js"`.
