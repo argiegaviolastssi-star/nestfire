@@ -13,7 +13,8 @@ import { EnumFirebaseFunctionVersion } from '../enums/firebase-function-version.
  */
 export function scanFirebaseModules(appModule: Type<any>): { module: Type<any>; configuration: IFirebaseConfigDeployment }[] {
   const imports: Type<any>[] = Reflect.getMetadata(MODULE_METADATA.IMPORTS, appModule) || [];
-
+  imports.push(appModule);
+  
   const found: { module: Type<any>; configuration: IFirebaseConfigDeployment }[] = [];
 
   for (const mod of imports) {
