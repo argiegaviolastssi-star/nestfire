@@ -1,11 +1,10 @@
-
 <p align="center">
   <img src="./assets/nestfire_logo.png" alt="NestFire Logo" width="190" />
 </p>
 
 <h1 align="center">NestFire</h1>
 
-<p align="center">Library to use Firebase and host a NestJS backend on Firebase Functions.</p>
+<p align="center">Library to use Firebase and deploy a NestJS backend on Firebase Functions.</p>
 
 
 - [⚙️ Configuration](#️-configuration)
@@ -14,7 +13,7 @@
   - [Firestore](#firestore)
   - [Auth](#auth)
   - [Storage](#storage)
-- [🚀 Deploy Firebase Functions](#-deploy-firebase-functions)
+- [🚀 Deploy NestJS on Firebase Functions](#-deploy-nestjs-on-firebase-functions)
   - [HTTPS](#https)
   - [Firestore Trigger](#firestore-trigger)
 
@@ -115,13 +114,29 @@ export class BookService {
 
 ## Auth
 
+Use `this.firebase.auth()` to access Firebase Auth instance.  
+Optionally, provide a `tenantId` to use multi-tenancy.
+
+```ts
+const auth = this.firebase.auth(); // default auth
+const tenantAuth = this.firebase.auth('tenant-id'); // tenant-aware auth
+await auth.createUser({ email: 'user@example.com', password: 'secret' });
+```
+
 ## Storage
+
+Use `this.firebase.storage()` to access Firebase Cloud Storage.
+
+```ts
+const bucket = this.firebase.storage().bucket();
+await bucket.upload('local-file.txt', { destination: 'uploads/file.txt' });
+```
 
 <br>
 
-# 🚀 Deploy Firebase Functions 
-When you install nestfire it will create a `index.ts` file in the root of your project. This file will be used to deploy your functions.
-The `firebase.json` file have to be configured to use the `index.ts` file.
+# 🚀 Deploy NestJS on Firebase Functions 
+When you install `nestfire`, it will create an `index.ts` file in the root of your project. This file is used to deploy your functions.
+The `firebase.json` file has to be configured to use the `index.ts` file.
 
 In your `firebase.json` file, add the following:
 
@@ -140,7 +155,7 @@ The first argument is the version of the function you want to deploy. The second
 
 ### V1
 Version: EnumFirebaseFunctionVersion.V1
-Data: [RuntimeOptions](https://firebase.google.com/docs/reference/functions/firebase-functions.runtimeoptions)
+Options: [RuntimeOptions](https://firebase.google.com/docs/reference/functions/firebase-functions.runtimeoptions)
 
 ```ts
 @FirebaseHttps(EnumFirebaseFunctionVersion.V1, { memory: '256MB' })
@@ -148,7 +163,7 @@ Data: [RuntimeOptions](https://firebase.google.com/docs/reference/functions/fire
 
 ### V2
 Version: EnumFirebaseFunctionVersion.V2
-Data: [HttpsOptions](https://firebase.google.com/docs/reference/functions/2nd-gen/node/firebase-functions.https.httpsoptions)
+Options: [HttpsOptions](https://firebase.google.com/docs/reference/functions/2nd-gen/node/firebase-functions.https.httpsoptions)
 
 ```ts
 @FirebaseHttps(EnumFirebaseFunctionVersion.V1, { memory: '256MiB' })
@@ -170,7 +185,7 @@ import { EnumFirebaseFunctionVersion, FirebaseHttps } from 'nestfire';
 export class BookModule {}
 ```
 
-> **Note:** You can deploy with the command:  firebase deploy --only function
+> **Note:** You can deploy with the command:  `firebase deploy --only functions`
 
 <br>
 
@@ -241,8 +256,8 @@ export { orderTrigger } from './src/triggers/order/order.trigger';
 ```
 
 With this export Firebase will create a function called `orderTrigger` in your Firebase project. When you run the command `firebase deploy --only functions`.
-<br>
 
+<br>
 
 ## 📖 API Reference
 
