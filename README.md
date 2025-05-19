@@ -33,7 +33,7 @@ npm install nestfire
 > 3. Add in package.json  `"main": "dist/index.js"`.
 > 4. Configure the `firebase.json` file to use the `index.ts` file created by nestfire. [See below](#indexts).
 
-```bash
+
 ## ⚙️ Environment Variables
 
 Add the private key in your `.env` file as`SERVICE_ACCOUNT_KEY` or `SERVICE_ACCOUNT_KEY_PATH`
