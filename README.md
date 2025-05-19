@@ -4,7 +4,7 @@
 
 <h1 align="center">NestFire</h1>
 
-<p align="center">Library to use Firebase and deploy a NestJS backend on Firebase Functions.</p>
+<p align="center">Library to integrate Firebase with NestJS, allowing each module to be deployed as an individual Firebase Function.</p>
 
 
 - [⚙️ Configuration](#️-configuration)
@@ -14,6 +14,7 @@
   - [Auth](#auth)
   - [Storage](#storage)
 - [🚀 Deploy NestJS on Firebase Functions](#-deploy-nestjs-on-firebase-functions)
+  - [index.ts](#indexts)
   - [HTTPS](#https)
   - [Firestore Trigger](#firestore-trigger)
 
@@ -135,8 +136,12 @@ await bucket.upload('local-file.txt', { destination: 'uploads/file.txt' });
 <br>
 
 # 🚀 Deploy NestJS on Firebase Functions 
-When you install `nestfire`, it will create an `index.ts` file in the root of your project. This file is used to deploy your functions.
-The `firebase.json` file has to be configured to use the `index.ts` file.
+## index.ts
+When you install `nestfire`, it will create an `index.ts` file in the root of your project. This file is used to deploy your functions.  
+The `firebase.json` file has to be configured to use this file.
+
+In addition to exporting the `firebaseFunctionsHttpsDeployment(AppModule)`, you should also export any Firestore triggers you want to deploy.  
+👉 See the [Firestore Trigger](#firestore-trigger) section for examples.
 
 In your `firebase.json` file, add the following:
 
@@ -267,6 +272,62 @@ export { orderTrigger } from './src/triggers/order/order.trigger';
 > firebase deploy --only functions
 > ```
 
+### Recommended Folder Structure
+
+It is recommended to place your Firestore triggers inside a `src/triggers` directory.  
+Each trigger should have its own subfolder with a `.trigger.ts` and `.trigger.module.ts` file.
+
+#### Example Structure:
+```
+src/
+└── triggers/
+    └── order/
+        ├── order.trigger.ts
+        └── order.trigger.module.ts
+```
+
+In `order.trigger.module.ts`, import all the modules that the trigger needs.  
+Then use `await getModule(OrderTriggerModule)` to get access to the services required by your trigger logic.
+
+#### Example: order.trigger.ts
+
+```ts
+import { Trigger, eventTrigger } from 'nestfire';
+import { EventContext, Change, DocumentSnapshot } from 'firebase-functions/v1';
+
+export const orderTrigger: Trigger = {
+  // Trigger when a new order document is created
+  onCreate: eventTrigger(
+    'onCreate',
+    'projects/{projectId}/orders/{orderId}',
+    async function orderCreatedTriggerOnCreate(
+      snapshot: DocumentSnapshot,
+      context: EventContext
+    ): Promise<void> {
+      // Example: send confirmation email
+    },
+    { memory: '256MB', minInstances: 1 },
+  ),
+
+  // Trigger when an existing order document is updated
+  onUpdate: eventTrigger(
+    'onUpdate',
+    'projects/{projectId}/orders/{orderId}',
+    async function orderUpdatedTriggerOnUpdate(
+      change: Change<DocumentSnapshot>,
+      context: EventContext
+    ): Promise<void> {
+      const before = change.before.data();
+      const after = change.after.data();
+      // Example: notify if status changed
+    },
+    { memory: '256MB', minInstances: 1 },
+  ),
+};
+```
+
+Finally, export your trigger in `index.ts` to enable deployment.
+
 <br>
 
 ## 📖 API Reference
@@ -309,8 +370,7 @@ export { orderTrigger } from './src/triggers/order/order.trigger';
   ⚠️ **Important:** This function is automatically included in the generated `index.ts` file when you install `nestfire`. You should not create it manually.
 
 - **eventTrigger**  
-  Utility function to create Firestore triggers like `onCreate`, `onUpdate`, etc.  
-  It accepts the trigger type, document path, handler function, and function options (e.g., memory, minInstances).
+  Utility function to create Firestore triggers like `onCreate`, `onUpdate`, `onDelete`, or `onWrite` as properties.
 
 - **Trigger**  
   Interface used to define Firestore triggers using `onCreate`, `onUpdate`, `onDelete`, or `onWrite` as properties.
