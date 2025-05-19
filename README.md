@@ -191,14 +191,18 @@ export class BookModule {}
 
 ## Firestore Trigger
 
-Register Firestore triggers that will be executed when a document is created or updated in Firestore.
-Example for order creations and updates:
+You can register Firestore triggers that automatically run when a document is created or updated in Firestore.
+
+### Example: Order triggers
+
+Define your triggers using `eventTrigger` from `nestfire`:
 
 ```ts
 import { Trigger, eventTrigger } from 'nestfire';
 import { EventContext, Change, DocumentSnapshot } from 'firebase-functions/v1';
 
 export const orderTrigger: Trigger = {
+  // Trigger when a new order document is created
   onCreate: eventTrigger(
     'onCreate',
     'projects/{projectId}/orders/{orderId}',
@@ -206,12 +210,12 @@ export const orderTrigger: Trigger = {
       snapshot: DocumentSnapshot,
       context: EventContext
     ): Promise<void> {
-      // e.g., send order confirmation email
+      // Example: send confirmation email
     },
     { memory: '256MB', minInstances: 1 },
   ),
-  
 
+  // Trigger when an existing order document is updated
   onUpdate: eventTrigger(
     'onUpdate',
     'projects/{projectId}/orders/{orderId}',
@@ -221,15 +225,16 @@ export const orderTrigger: Trigger = {
     ): Promise<void> {
       const before = change.before.data();
       const after = change.after.data();
-      // e.g., notify if status changed
+      // Example: notify if status changed
     },
     { memory: '256MB', minInstances: 1 },
   ),
 };
 ```
 
-And example for inventory restocks:
-`order.trigger.ts`
+### Example: Inventory restock
+
+Use `getModule` to retrieve a NestJS service within the trigger context:
 
 ```ts
 import { DocumentSnapshot, EventContext } from 'firebase-functions/v1';
@@ -249,13 +254,18 @@ export async function inventoryRestockTriggerOnCreate(
 }
 ```
 
-Now you can use `orderTrigger` in your `index.ts` file to deploy the triggers:
+### Deploying Firestore triggers
+
+To deploy the triggers, export them in your `index.ts` file:
 
 ```ts
 export { orderTrigger } from './src/triggers/order/order.trigger';
 ```
 
-With this export Firebase will create a function called `orderTrigger` in your Firebase project. When you run the command `firebase deploy --only functions`.
+> This will create a Firebase Function named `orderTrigger`. It will be deployed when you run:
+> ```bash
+> firebase deploy --only functions
+> ```
 
 <br>
 
@@ -297,6 +307,22 @@ With this export Firebase will create a function called `orderTrigger` in your F
 - **firebaseFunctionsHttpsDeployment(appModule: any): Record&lt;string, HttpsFunction&gt;**  
   Function that scans the provided NestJS module for any submodules decorated with `@FirebaseHttps`, and generates Firebase HTTPS functions for each.  
   ⚠️ **Important:** This function is automatically included in the generated `index.ts` file when you install `nestfire`. You should not create it manually.
+
+- **eventTrigger**  
+  Utility function to create Firestore triggers like `onCreate`, `onUpdate`, etc.  
+  It accepts the trigger type, document path, handler function, and function options (e.g., memory, minInstances).
+
+- **Trigger**  
+  Interface used to define Firestore triggers using `onCreate`, `onUpdate`, `onDelete`, or `onWrite` as properties.
+
+- **getModule**  
+  Utility function that retrieves a NestJS module instance inside a trigger context.  
+  Useful to inject services into your Firestore functions, for example:
+  ```ts
+  const mod = await getModule(SomeModule);
+  const service = mod.get(SomeService);
+  ```
+  
 
 <br>
 
