@@ -1,5 +1,8 @@
+export { FirebaseHttps } from './decorators/firebase.decorator';
 export * from './firebase/firebase';
-export * from './firebase/firebase.module';
-export * from './httpFunction/v1/firebase-http-function.v1';
-export * from './httpFunction/v2/firebase-http-function.v2';
+export * from './interfaces/firebase-https-configuration-v1.interface';
+export * from './interfaces/firebase-https-configuration-v2.interface';
+export * from './enums/firebase-function-version.enum';
+export * from './interfaces/trigger.interface';
 export * from './triggers/v1/event-trigger';
+export * from './httpFunction/function-deploy'

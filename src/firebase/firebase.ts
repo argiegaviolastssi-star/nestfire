@@ -23,8 +23,8 @@ export class Firebase {
    * @returns {Firestore} - Firestore instance
    * @memberof Firebase
    */
-  firestore(databaseId?: string): Firestore {
-    return databaseId ? this._firestore : getFirestore(this._app, databaseId);
+  public firestore(databaseId?: string): Firestore {
+    return !databaseId ? this._firestore : getFirestore(this._app, databaseId);
   }
 
   /**
@@ -33,15 +33,15 @@ export class Firebase {
    * @returns {Auth} - Auth instance
    * @memberof Firebase
    */
-  auth(tenancyId?: string): Auth | TenantAwareAuth {
-    return tenancyId ? this._auth : this._auth.tenantManager().authForTenant(tenancyId);
+  public auth(tenancyId?: string): Auth | TenantAwareAuth {
+    return !tenancyId ? this._auth : this._auth.tenantManager().authForTenant(tenancyId);
   }
 
-  storage(): Storage {
+  public storage(): Storage {
     return this._storage;
   }
 
-  app(): App {
+  public app(): App {
     return this._app;
   }
 
