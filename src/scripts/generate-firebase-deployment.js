@@ -14,7 +14,7 @@ const content = `/**
  * To deploy, run:
  *   firebase deploy --only functions
  *
- **/
+ */
 
 
 import { AppModule } from 'src/app.module';
