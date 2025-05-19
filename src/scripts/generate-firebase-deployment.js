@@ -1,4 +1,4 @@
-const fs   = require('fs');
+const fs = require('fs');
 const path = require('path');
 
 const projectRoot = process.env.INIT_CWD || process.cwd();
