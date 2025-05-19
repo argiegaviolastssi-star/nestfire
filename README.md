@@ -68,7 +68,7 @@ SERVICE_ACCOUNT_KEY_PATH="./serviceAccountKey.json"
 
 Import `FirebaseModule` into **any** module where you need Firebase.
 
-### Modules
+## Modules
 Import FirebaseModule and ConfigModule. Use FirebaseModule from nestfire.
 ```ts
 import { Module } from '@nestjs/common';
@@ -88,7 +88,7 @@ import { BooksService } from './books.service';
 export class BooksModule {}
 ```
 
-### Firestore
+## Firestore
 Injecting Firebase. Use Firebase from nestfire.
 
 ```ts
@@ -113,13 +113,13 @@ export class BookService {
 
 ```
 
-### Auth
+## Auth
 
-### Storage
+## Storage
 
 <br>
 
-## 🚀 Deploy Firebase Functions 
+# 🚀 Deploy Firebase Functions 
 When you install nestfire it will create a `index.ts` file in the root of your project. This file will be used to deploy your functions.
 The `firebase.json` file have to be configured to use the `index.ts` file.
 
@@ -134,29 +134,27 @@ In your `firebase.json` file, add the following:
 }
 ```
 
-### HTTPS
+## HTTPS
 Add the `@FirebaseHttps` decorator in the modules you want to deploy.
 The first argument is the version of the function you want to deploy. The second argument is an object with the options for the function.
 
-##### V1
+### V1
 Version: EnumFirebaseFunctionVersion.V1
 Data: [RuntimeOptions](https://firebase.google.com/docs/reference/functions/firebase-functions.runtimeoptions)
 
 ```ts
 @FirebaseHttps(EnumFirebaseFunctionVersion.V1, { memory: '256MB' })
 ```
-<br>
 
-##### V2
+### V2
 Version: EnumFirebaseFunctionVersion.V2
 Data: [HttpsOptions](https://firebase.google.com/docs/reference/functions/2nd-gen/node/firebase-functions.https.httpsoptions)
 
 ```ts
 @FirebaseHttps(EnumFirebaseFunctionVersion.V1, { memory: '256MiB' })
 ```
-<br>
 
-##### Example
+### Example
 ```ts
 import { Module } from '@nestjs/common';
 import { BookController } from './book.controller';
@@ -176,7 +174,7 @@ export class BookModule {}
 
 <br>
 
-### Firestore Trigger
+## Firestore Trigger
 
 Register Firestore triggers that will be executed when a document is created or updated in Firestore.
 Example for order creations and updates:
@@ -246,38 +244,46 @@ With this export Firebase will create a function called `orderTrigger` in your F
 <br>
 
 
-## 📁 Example NestJS Module
-
-```ts
-import { Module } from '@nestjs/common';
-import { OrdersController } from './orders.controller';
-import { OrdersService } from './orders.service';
-import { FirebaseModule } from 'nestfire';
-import { ConfigModule } from '@nestjs/config';
-
-@Module({
-  imports: [
-    ConfigModule.forRoot(),
-    FirebaseModule,
-  ],
-  controllers: [OrdersController],
-  providers: [OrdersService],
-  exports: [OrdersService],
-})
-export class OrdersModule {}
-```
-<br>
-
-
 ## 📖 API Reference
 
-- **`FirebaseModule`**: injects `admin.auth()`, `admin.firestore()`, `admin.storage()`, etc.  <br><br>
-- **`createFirebaseHttpsV1(memory, module)`**: deploys v1 HTTP function.  <br><br>
-- **`createFirebaseHttpsV2(options)`**: deploys v2 HTTP function with `{ region, memory, timeoutSeconds, module, fnName }`.  <br><br>
-- **`eventTrigger(eventType, path, handler, options)`**: wraps Firestore triggers (`onCreate`, `onUpdate`, etc.).
+- **index.ts**  
+  Auto-generated entry point used by Firebase to detect and deploy NestJS modules decorated with `@FirebaseHttps`. This file is created when you install `nestfire` and must not be deleted. It calls `firebaseFunctionsHttpsDeployment(AppModule)` to expose decorated modules.
+
+ - **@FirebaseHttps**  
+   Decorator to mark NestJS modules for deployment as Firebase Functions.  
+   Usage:  
+   ```ts
+   @FirebaseHttps(EnumFirebaseFunctionVersion.V1, { memory: '256MB' })
+   ```  
+   First argument: function version (`V1` or `V2`).  
+   Second argument: configuration object (its structure depends on the version).  
+   👉 See [HTTPS](#https) section for more details.
+
+- **FirebaseModule**  
+  NestJS global module that provides the `Firebase` injectable. It automatically initializes Firebase using credentials from `.env`. Import it to use Firebase services (Auth, Firestore, Storage).
+
+- **Firebase**  
+  Injectable service wrapping Firebase Admin SDK.  
+  Provides:
+  - `firestore(databaseId?: string)` – Access Firestore (default or specific DB).
+  - `auth(tenantId?: string)` – Access Auth service (supports multi-tenancy).
+  - `storage()` – Access Cloud Storage.
+  - `app()` – Access the initialized Firebase App.
+
+- **EnumFirebaseFunctionVersion**  
+  Enum to choose between Firebase Functions v1 or v2. Used in the `@FirebaseHttps` decorator.  
+  ```ts
+  export enum EnumFirebaseFunctionVersion {
+    V1 = 'V1',
+    V2 = 'V2',
+  }
+  ```
+
+- **firebaseFunctionsHttpsDeployment(appModule: any): Record&lt;string, HttpsFunction&gt;**  
+  Function that scans the provided NestJS module for any submodules decorated with `@FirebaseHttps`, and generates Firebase HTTPS functions for each.  
+  ⚠️ **Important:** This function is automatically included in the generated `index.ts` file when you install `nestfire`. You should not create it manually.
 
 <br>
-
 
 ## 🤝 Contributing
 
