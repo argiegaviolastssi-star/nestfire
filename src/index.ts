@@ -1,5 +1,6 @@
-export { FirebaseHttps } from './decorators/firebase.decorator';
+export { FirebaseHttps } from './decorators/firebase-https.decorator';
 export * from './firebase/firebase';
+export * from './firebase/firebase.module';
 export * from './interfaces/firebase-https-configuration-v1.interface';
 export * from './interfaces/firebase-https-configuration-v2.interface';
 export * from './enums/firebase-function-version.enum';

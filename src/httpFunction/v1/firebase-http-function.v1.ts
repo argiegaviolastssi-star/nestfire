@@ -13,23 +13,16 @@ expressServer.use(compression());
  * @param {RuntimeOptions} [runtimeOptions] - The runtime options for the function.
  * @param {string} [region] - The region for the function.
  * @param {boolean} [isolateControllers=true] - Whether to remove controllers from imported modules.
- * @param {boolean} [removeControllerPrefix=true] - Whether to remove the controller prefix.
  * @returns {HttpsFunction} - The created Firebase HTTPS function.
  */
-export function createFirebaseHttpsV1(
-  module: any,
-  runtimeOptions?: RuntimeOptions,
-  region?: string,
-  isolateControllers: boolean = true,
-  removeControllerPrefix: boolean = true
-): HttpsFunction {
+export function createFirebaseHttpsV1(module: any, runtimeOptions?: RuntimeOptions, region?: string, isolateControllers: boolean = true): HttpsFunction {
   validateRegion(region);
 
   const run = runWith(runtimeOptions ?? {});
   const runRegion = region ? run.region(region) : run;
 
   return runRegion.https.onRequest(async (request: Request, response: Response) => {
-    await createFunction(module, expressServer, isolateControllers, removeControllerPrefix);
+    await createFunction(module, expressServer, isolateControllers);
     expressServer(request, response);
   });
 }

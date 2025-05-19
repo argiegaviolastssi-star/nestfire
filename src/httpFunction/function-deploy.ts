@@ -14,7 +14,6 @@ export function firebaseFunctionsHttpsDeployment(appModule: any): Record<string,
   const firebaseModules = scanFirebaseModules(appModule);
   const functions: Record<string, any> = {};
 
-  console.log('holaaaaaaaaaa')
   for (const module of firebaseModules) {
     mergeAppProvidersIntoModule(appModule, module.module);
     const name = module.module.name;

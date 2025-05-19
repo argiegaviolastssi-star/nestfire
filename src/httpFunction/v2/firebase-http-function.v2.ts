@@ -2,7 +2,7 @@ import express from 'express';
 import { Express } from 'express-serve-static-core';
 import compression from 'compression';
 import { HttpsFunction, HttpsOptions, onRequest } from 'firebase-functions/v2/https';
-import { createFunction } from '../create-function'; 
+import { createFunction } from '../create-function';
 
 const expressServer: Express = express();
 expressServer.use(compression());
@@ -12,12 +12,11 @@ expressServer.use(compression());
  * @param {any} module - The NestJS module to be used for the function.
  * @param {HttpsOptions} httpsOptions - The options for the HTTPS function.
  * @param {boolean} [isolateControllers=true] - Whether to remove controllers from imported modules.
- * @param {boolean} [removeControllerPrefix=true] - Whether to remove the controller prefix.
  * @returns {HttpsFunction} - The created Firebase HTTPS function.
  */
-export function createFirebaseHttpsV2(module: any, httpsOptions?: HttpsOptions, isolateControllers: boolean = true, removeControllerPrefix: boolean = true): HttpsFunction {
+export function createFirebaseHttpsV2(module: any, httpsOptions?: HttpsOptions, isolateControllers: boolean = true): HttpsFunction {
   return onRequest(httpsOptions ?? {}, async (req, res) => {
-    await createFunction(module, expressServer, isolateControllers, removeControllerPrefix);
+    await createFunction(module, expressServer, isolateControllers);
     expressServer(req, res);
   });
 }

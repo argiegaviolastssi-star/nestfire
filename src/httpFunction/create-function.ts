@@ -3,7 +3,6 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { deleteImportedControllers } from './delete-imported-controllers';
-import { deleteControllerPrefix } from './delete-controller-prefix';
 
 const loadedFunctions: { [key: string]: any } = {};
 
@@ -11,7 +10,6 @@ export async function createFunction(
   module: any,
   expressServer: Express,
   isolateControllers: boolean = true,
-  removeControllerPrefix: boolean = true
 ): Promise<INestApplication> {
   const moduleName = module.constructor.name;
   if (loadedFunctions[moduleName]) {
@@ -20,10 +18,6 @@ export async function createFunction(
 
   if (isolateControllers) {
     deleteImportedControllers(module);
-  }
-
-  if (removeControllerPrefix) {
-    deleteControllerPrefix(module);
   }
 
   const app: INestApplication = await NestFactory.create(module, new ExpressAdapter(expressServer));

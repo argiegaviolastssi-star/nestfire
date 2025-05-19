@@ -17,10 +17,11 @@ export function scanFirebaseModules(appModule: Type<any>): { module: Type<any>; 
   const found: { module: Type<any>; configuration: IFirebaseConfigDeployment }[] = [];
 
   for (const mod of imports) {
-    const isFirebase = Reflect.getMetadata('firebase', mod);
+    const isFirebase =
+      (mod as any)?.firebaseConfigurationVersion === EnumFirebaseFunctionVersion.V1 || (mod as any)?.firebaseConfigurationVersion === EnumFirebaseFunctionVersion.V2;
     if (isFirebase) {
-      const version: EnumFirebaseFunctionVersion = Reflect.getMetadata('firebaseConfigurationVersion', mod);
-      const opts: IFirebaseHttpsConfigurationV1 | IFirebaseHttpsConfigurationV2 = Reflect.getMetadata('firebaseConfiguration', mod);
+      const version: EnumFirebaseFunctionVersion = (mod as any)?.firebaseConfigurationVersion;
+      const opts: IFirebaseHttpsConfigurationV1 | IFirebaseHttpsConfigurationV2 = (mod as any)?.firebaseConfiguration;
 
       if (version === EnumFirebaseFunctionVersion.V1) {
         const configV1 = opts as IFirebaseHttpsConfigurationV1;
