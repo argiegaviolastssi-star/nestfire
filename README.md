@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/nestfire_logo.png" alt="NestFire Logo" width="190" />
+  <img src="https://github.com/felipeosano/nestfire/blob/develop/assets/nestfire_logo.png?raw=true" alt="NestFire Logo" width="190" />
 </p>
 
 <h1 align="center">NestFire</h1>
