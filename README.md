@@ -177,7 +177,7 @@ Version: EnumFirebaseFunctionVersion.V2
 Options: [HttpsOptions](https://firebase.google.com/docs/reference/functions/2nd-gen/node/firebase-functions.https.httpsoptions)
 
 ```ts
-@FirebaseHttps(EnumFirebaseFunctionVersion.V1, { memory: '256MiB' })
+@FirebaseHttps(EnumFirebaseFunctionVersion.V2, { memory: '256MiB' })
 ```
 
 ### Example
@@ -197,6 +197,7 @@ export class BookModule {}
 ```
 
 > **Note:** You can deploy with the command:  `firebase deploy --only functions`
+> Before deploying you have to build your project. `npm run build`.
 
 <br>
 
