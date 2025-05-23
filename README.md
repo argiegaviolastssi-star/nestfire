@@ -6,6 +6,7 @@
 
 <p align="center">Library to integrate Firebase with NestJS, allowing each module to be deployed as an individual Firebase Function.</p>
 
+Example and step by step guide: [nestfire-example](https://github.com/felipeosano/nestfire-example)
 
 - [⚙️ Configuration](#️-configuration)
 - [🔥 Firebase Usage](#-firebase-usage)
@@ -44,26 +45,9 @@ Add the private key in your `.env` file as`SERVICE_ACCOUNT_KEY` or `SERVICE_ACCO
 
 <br>
 
-`.env` file:
+`.env` file, add the path to the service account key file:
 ```bash
-# Either embed the JSON key directly
-SERVICE_ACCOUNT_KEY={
-  "type": "service_account",
-  "project_id": "my-project-id",
-  "private_key_id": "ABCD1234...",
-  "private_key": "-----BEGIN PRIVATE KEY-----
-MIIEv...
------END PRIVATE KEY-----",
-  "client_email": "firebase-adminsdk@my-project.iam.gserviceaccount.com",
-  "client_id": "1234567890",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/..."
-}
-
-# Or point to a file path
-SERVICE_ACCOUNT_KEY_PATH="./serviceAccountKey.json"
+SERVICE_ACCOUNT_KEY_PATH=./serviceAccountKey.json
 ```
 
 > **Note:** You must load `.env` in your code (e.g., using [dotenv](https://www.npmjs.com/package/dotenv)).
