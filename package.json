@@ -49,13 +49,13 @@
     "@nestjs/platform-express": "^10.0.0",
     "@types/compression": "1.7.5",
     "@types/node": "22.15.18",
-    "firebase-admin": "^12.7.0",
-    "firebase-functions": "^5.1.1",
     "typescript": "5.8.3"
   },
   "dependencies": {
-    "compression": "1.8.0",
     "firebase-admin": "13.4.0",
-    "firebase-functions": "6.3.2"
+    "firebase-functions": "6.3.2",
+    "compression": "1.8.0",
+    "class-validator": "^0.14.0",
+    "class-transformer": "^0.5.1"
   }
 }
