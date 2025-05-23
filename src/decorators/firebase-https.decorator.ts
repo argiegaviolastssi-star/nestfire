@@ -12,7 +12,7 @@ export function FirebaseHttps(version: EnumFirebaseFunctionVersion.V1, configura
 export function FirebaseHttps(version: EnumFirebaseFunctionVersion.V2, configuration: IFirebaseHttpsConfigurationV2): ClassDecorator;
 export function FirebaseHttps(
   version: EnumFirebaseFunctionVersion = EnumFirebaseFunctionVersion.V1,
-  configuration: IFirebaseHttpsConfigurationV1 | IFirebaseHttpsConfigurationV2
+  configuration: IFirebaseHttpsConfigurationV1 | IFirebaseHttpsConfigurationV2,
 ): ClassDecorator {
   return (target: any) => {
     Object.defineProperty(target, 'firebaseConfigurationVersion', {
