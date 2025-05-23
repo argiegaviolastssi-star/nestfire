@@ -5,7 +5,7 @@ const projectRoot = process.env.INIT_CWD || process.cwd();
 
 const outPath = path.join(projectRoot, 'index.ts');
 const content = `/**
- * Auto-generated file.
+ * Auto-generated file by NestFire.
  *
  * firebaseFunctionsHttpsDeployment will deploy each NestJS module
  * annotated with \`@FirebaseHttps(EnumFirebaseFunctionVersion.V1, { memory: '256MB' })\`
