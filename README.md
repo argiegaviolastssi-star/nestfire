@@ -50,8 +50,6 @@ Add the private key in your `.env` file as`SERVICE_ACCOUNT_KEY` or `SERVICE_ACCO
 SERVICE_ACCOUNT_KEY_PATH=./serviceAccountKey.json
 ```
 
-> **Note:** You must load `.env` in your code (e.g., using [dotenv](https://www.npmjs.com/package/dotenv)).
-
 <br>
 
 # 🔥 Firebase Usage
