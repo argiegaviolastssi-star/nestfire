@@ -1,8 +1,11 @@
 import express from 'express';
 import { Express } from 'express-serve-static-core';
 import compression from 'compression';
-import { HttpsFunction, Request, Response, RuntimeOptions, runWith, SUPPORTED_REGIONS } from 'firebase-functions/v1';
+import { HttpsFunction, Request, Response, runWith, SUPPORTED_REGIONS } from 'firebase-functions/v1';
 import { createFunction } from '../create-function';
+import { deleteImportedControllers } from '../delete-imported-controllers';
+import { removePathFromSingleController } from '../url-prefix';
+import { IFirebaseHttpsConfigurationV1 } from '../../interfaces/firebase-https-configuration-v1.interface';
 
 const expressServer: Express = express();
 expressServer.use(compression());
@@ -15,14 +18,20 @@ expressServer.use(compression());
  * @param {boolean} [isolateControllers=true] - Whether to remove controllers from imported modules.
  * @returns {HttpsFunction} - The created Firebase HTTPS function.
  */
-export function createFirebaseHttpsV1(module: any, runtimeOptions?: RuntimeOptions, region?: string, isolateControllers: boolean = true): HttpsFunction {
+export function createFirebaseHttpsV1(module: any, runtimeOptions?: IFirebaseHttpsConfigurationV1, region?: string, isolateControllers: boolean = true): HttpsFunction {
   validateRegion(region);
 
   const run = runWith(runtimeOptions ?? {});
   const runRegion = region ? run.region(region) : run;
 
+  if (isolateControllers) {
+    deleteImportedControllers(module);
+  }
+
+  removePathFromSingleController(module);
+
   return runRegion.https.onRequest(async (request: Request, response: Response) => {
-    await createFunction(module, expressServer, isolateControllers);
+    await createFunction(module, expressServer);
     expressServer(request, response);
   });
 }
