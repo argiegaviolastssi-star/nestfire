@@ -1,9 +1,11 @@
 import express from 'express';
 import { Express } from 'express-serve-static-core';
 import compression from 'compression';
-import { HttpsFunction, HttpsOptions, onRequest } from 'firebase-functions/v2/https';
+import { HttpsFunction, onRequest } from 'firebase-functions/v2/https';
 import { createFunction } from '../create-function';
 import { deleteImportedControllers } from '../delete-imported-controllers';
+import { IFirebaseHttpsConfigurationV2 } from '../../interfaces/firebase-https-configuration-v2.interface';
+import { removePathFromSingleController } from '../url-prefix';
 
 const expressServer: Express = express();
 expressServer.use(compression());
@@ -15,9 +17,13 @@ expressServer.use(compression());
  * @param {boolean} [isolateControllers=true] - Whether to remove controllers from imported modules.
  * @returns {HttpsFunction} - The created Firebase HTTPS function.
  */
-export function createFirebaseHttpsV2(module: any, httpsOptions?: HttpsOptions, isolateControllers: boolean = true): HttpsFunction {
+export function createFirebaseHttpsV2(module: any, httpsOptions?: IFirebaseHttpsConfigurationV2, isolateControllers: boolean = true): HttpsFunction {
   if (isolateControllers) {
     deleteImportedControllers(module);
+  }
+
+  if(httpsOptions?.removeControllerPrefix){
+    removePathFromSingleController(module);
   }
 
   return onRequest(httpsOptions ?? {}, async (req, res) => {
