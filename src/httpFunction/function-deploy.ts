@@ -1,5 +1,5 @@
 import { EnumFirebaseFunctionVersion } from '../enums/firebase-function-version.enum';
-import { getModuleName } from './module-name';
+import { getUrlPrefix } from './url-prefix';
 import { mergeAppProvidersIntoModule } from './module-providers';
 import { scanFirebaseModules } from './scan-firebase-module';
 import { createFirebaseHttpsV1 } from './v1/firebase-http-function.v1';
@@ -17,7 +17,7 @@ export function firebaseFunctionsHttpsDeployment(appModule: any): Record<string,
 
   for (const module of firebaseModules) {
     mergeAppProvidersIntoModule(appModule, module.module);
-    const name = getModuleName(module.module);
+    const name = getUrlPrefix(module.module, module.configuration);
     const func =
       module.configuration.version === EnumFirebaseFunctionVersion.V2
         ? createFirebaseHttpsV2(module.module, module.configuration.configV2)

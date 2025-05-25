@@ -3,6 +3,7 @@ import { Express } from 'express-serve-static-core';
 import compression from 'compression';
 import { HttpsFunction, HttpsOptions, onRequest } from 'firebase-functions/v2/https';
 import { createFunction } from '../create-function';
+import { deleteImportedControllers } from '../delete-imported-controllers';
 
 const expressServer: Express = express();
 expressServer.use(compression());
@@ -15,8 +16,12 @@ expressServer.use(compression());
  * @returns {HttpsFunction} - The created Firebase HTTPS function.
  */
 export function createFirebaseHttpsV2(module: any, httpsOptions?: HttpsOptions, isolateControllers: boolean = true): HttpsFunction {
+  if (isolateControllers) {
+    deleteImportedControllers(module);
+  }
+
   return onRequest(httpsOptions ?? {}, async (req, res) => {
-    await createFunction(module, expressServer, isolateControllers);
+    await createFunction(module, expressServer);
     expressServer(req, res);
   });
 }

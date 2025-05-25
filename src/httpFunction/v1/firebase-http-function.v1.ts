@@ -3,8 +3,7 @@ import { Express } from 'express-serve-static-core';
 import compression from 'compression';
 import { HttpsFunction, Request, Response, RuntimeOptions, runWith, SUPPORTED_REGIONS } from 'firebase-functions/v1';
 import { createFunction } from '../create-function';
-import { getFunctionV1Config } from '../get-function-v1-config';
-import { removeControllerPrefix } from '../controller-prefix';
+import { deleteImportedControllers } from '../delete-imported-controllers';
 
 const expressServer: Express = express();
 expressServer.use(compression());
@@ -23,14 +22,12 @@ export function createFirebaseHttpsV1(module: any, runtimeOptions?: RuntimeOptio
   const run = runWith(runtimeOptions ?? {});
   const runRegion = region ? run.region(region) : run;
 
-  const config = getFunctionV1Config(module);
-  const moduleNameInPrefixURL = config?.moduleNameInPrefixURL === true || config?.moduleNameInPrefixURL === undefined || config?.moduleNameInPrefixURL === null;
-  if (!moduleNameInPrefixURL) {
-    removeControllerPrefix(module);
+  if (isolateControllers) {
+    deleteImportedControllers(module);
   }
 
   return runRegion.https.onRequest(async (request: Request, response: Response) => {
-    await createFunction(module, expressServer, isolateControllers);
+    await createFunction(module, expressServer);
     expressServer(request, response);
   });
 }

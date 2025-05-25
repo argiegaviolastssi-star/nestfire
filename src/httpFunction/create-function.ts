@@ -2,22 +2,16 @@ import { Express } from 'express-serve-static-core';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
-import { deleteImportedControllers } from './delete-imported-controllers';
 
 const loadedFunctions: { [key: string]: any } = {};
 
 export async function createFunction(
   module: any,
   expressServer: Express,
-  isolateControllers: boolean = true,
 ): Promise<INestApplication> {
   const moduleName = module.constructor.name;
   if (loadedFunctions[moduleName]) {
     return loadedFunctions[moduleName];
-  }
-
-  if (isolateControllers) {
-    deleteImportedControllers(module);
   }
 
   const app: INestApplication = await NestFactory.create(module, new ExpressAdapter(expressServer));
