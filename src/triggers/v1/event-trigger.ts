@@ -1,4 +1,4 @@
-import { Change, CloudFunction, EventContext, RuntimeOptions, runWith } from 'firebase-functions';
+import { Change, CloudFunction, EventContext, RuntimeOptions, runWith } from 'firebase-functions/v1';
 import * as admin from 'firebase-admin';
 
 export function eventTrigger(

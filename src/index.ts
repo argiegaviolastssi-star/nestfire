@@ -6,4 +6,6 @@ export * from './interfaces/firebase-https-configuration-v2.interface';
 export * from './enums/firebase-function-version.enum';
 export * from './interfaces/trigger.interface';
 export * from './triggers/v1/event-trigger';
-export * from './httpFunction/function-deploy'
+export * from './httpFunction/function-deploy';
+import * as admin from 'firebase-admin';
+export { admin };
