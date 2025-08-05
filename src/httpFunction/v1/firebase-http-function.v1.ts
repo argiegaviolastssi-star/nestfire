@@ -7,9 +7,6 @@ import { deleteImportedControllers } from '../delete-imported-controllers';
 import { removePathFromSingleController } from '../url-prefix';
 import { IFirebaseHttpsConfigurationV1 } from '../../interfaces/firebase-https-configuration-v1.interface';
 
-const expressServer: Express = express();
-expressServer.use(compression());
-
 /**
  * Creates a Firebase HTTPS function V1 with the specified memory and region.
  * @param {any} module - The NestJS module to be used for the function.
@@ -18,7 +15,12 @@ expressServer.use(compression());
  * @param {boolean} [isolateControllers=true] - Whether to remove controllers from imported modules.
  * @returns {HttpsFunction} - The created Firebase HTTPS function.
  */
-export function createFirebaseHttpsV1(module: any, runtimeOptions?: IFirebaseHttpsConfigurationV1, region?: string, isolateControllers: boolean = true): HttpsFunction {
+export function createFirebaseHttpsV1(
+  module: any,
+  runtimeOptions?: IFirebaseHttpsConfigurationV1,
+  region?: string,
+  isolateControllers: boolean = true
+): HttpsFunction {
   validateRegion(region);
 
   const run = runWith(runtimeOptions ?? {});
@@ -29,6 +31,9 @@ export function createFirebaseHttpsV1(module: any, runtimeOptions?: IFirebaseHtt
   }
 
   removePathFromSingleController(module);
+
+  const expressServer: Express = express();
+  expressServer.use(compression());
 
   return runRegion.https.onRequest(async (request: Request, response: Response) => {
     await createFunction(module, expressServer);
