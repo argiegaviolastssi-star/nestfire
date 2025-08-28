@@ -39,12 +39,14 @@ export function scanModuleEndpoints(module: any): EndpointInfo[] {
         const fullPath = `${controllerPath}${methodPath}`.replace(/\/+/g, '/');
         const functionName = generateFunctionName(controllerClass.name, methodName, httpMethod);
 
+        console.log(`[NestFire] Endpoint found: ${controllerClass.name}.${methodName} -> ${functionName}`);
+
         endpoints.push({
           controllerClass,
           methodName,
           path: fullPath,
           httpMethod,
-          functionName
+          functionName,
         });
       }
     }
@@ -63,17 +65,13 @@ export function scanModuleEndpoints(module: any): EndpointInfo[] {
 function generateFunctionName(controllerName: string, methodName: string, httpMethod: RequestMethod): string {
   // Remove 'Controller' suffix if present
   const cleanControllerName = controllerName.replace(/Controller$/, '');
-  
-  // Convert controller name to kebab-case
-  const controllerKebab = cleanControllerName
-    .replace(/([a-z])([A-Z])/g, '$1-$2') // Insert dash between lowercase and uppercase
-    .toLowerCase();
-  
-  // Convert method name to kebab-case
-  const methodKebab = methodName
-    .replace(/([a-z])([A-Z])/g, '$1-$2') // Insert dash between lowercase and uppercase
-    .toLowerCase();
-  
-  // Create kebab-case function name
-  return `${controllerKebab}-${methodKebab}`;
+
+  // Convert controller name to lowercase first word + camelCase
+  const controllerLower = cleanControllerName.toLowerCase();
+
+  // Convert method name - if it's already camelCase, keep it; if it's kebab-case, convert to camelCase
+  const methodCamel = methodName.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
+
+  // Create camelCase function name (Firebase CLI expects this format)
+  return `${controllerLower}${methodCamel.charAt(0).toUpperCase()}${methodCamel.slice(1)}`;
 }

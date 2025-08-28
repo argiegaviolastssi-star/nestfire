@@ -23,46 +23,60 @@ export function firebaseFunctionsHttpsDeployment(appModule: any): Record<string,
 
   for (const module of firebaseModules) {
     mergeAppProvidersIntoModule(appModule, module.module);
-    
+
     const config = module.configuration;
     const isV2 = config.version === EnumFirebaseFunctionVersion.V2;
     const moduleConfig = isV2 ? config.configV2 : config.configV1;
-    
+
     // Determine function type (default to HTTPS for backward compatibility)
     const functionType = moduleConfig?.functionType || EnumFirebaseFunctionType.HTTPS;
-    
+
     // Check if individual endpoint export is enabled
     const exportSeparately = moduleConfig?.exportSeparately || false;
-    
+
     if (exportSeparately) {
       // Create individual functions for each endpoint
       const endpoints = scanModuleEndpoints(module.module);
-      
+
       const individualFunctions = isV2
         ? createIndividualEndpointFunctionsV2(module.module, endpoints, functionType, moduleConfig)
         : createIndividualEndpointFunctionsV1(module.module, endpoints, functionType, moduleConfig);
-      
-      // Add all individual functions to the result
+
+      // Add all individual functions using camelCase naming (what Firebase CLI expects)
       Object.assign(functions, individualFunctions);
+
+      // Debug: log detailed function mapping
+      console.log('[NestFire] Individual functions created:');
+      for (const [name, func] of Object.entries(individualFunctions)) {
+        console.log(`  - ${name} (type: ${typeof func})`);
+      }
     } else {
       // Create a single function for the entire module (original behavior)
       const name = getUrlPrefix(module.module, module.configuration);
-      
+
       let func;
       if (functionType === EnumFirebaseFunctionType.CALLABLE) {
         // Create callable function
-        func = isV2
-          ? createFirebaseCallableV2(module.module, config.configV2)
-          : createFirebaseCallableV1(module.module, config.configV1);
+        func = isV2 ? createFirebaseCallableV2(module.module, config.configV2) : createFirebaseCallableV1(module.module, config.configV1);
       } else {
         // Create HTTPS function (original behavior)
-        func = isV2
-          ? createFirebaseHttpsV2(module.module, config.configV2)
-          : createFirebaseHttpsV1(module.module, config.configV1);
+        func = isV2 ? createFirebaseHttpsV2(module.module, config.configV2) : createFirebaseHttpsV1(module.module, config.configV1);
       }
-      
+
       functions[name] = func;
     }
+  }
+
+  // Debug: list exported function IDs to help diagnose naming issues
+  try {
+    const keys = Object.keys(functions);
+    if (keys.length === 0) {
+      console.warn('[NestFire] No Firebase functions were generated. Check your @FirebaseHttps decorators.');
+    } else {
+      console.log('[NestFire] Exported Firebase function IDs:', keys.join(', '));
+    }
+  } catch (e) {
+    // ignore logging errors
   }
 
   return functions;

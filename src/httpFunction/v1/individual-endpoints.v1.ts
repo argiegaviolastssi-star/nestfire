@@ -25,11 +25,9 @@ export function createIndividualEndpointFunctionsV1(
 
   for (const endpoint of endpoints) {
     if (functionType === EnumFirebaseFunctionType.CALLABLE) {
-      // For callable functions, we'll create a simplified handler
-      functions[endpoint.functionName] = createCallableForEndpoint(module, endpoint, runtimeOptions, region);
+      functions[endpoint.functionName] = createCallableHttpWrapperForEndpoint(module, endpoint, runtimeOptions, region, functionType);
     } else {
-      // For HTTPS functions, create an express-based handler
-      functions[endpoint.functionName] = createHttpsForEndpoint(module, endpoint, runtimeOptions, region);
+      functions[endpoint.functionName] = createHttpsForEndpoint(module, endpoint, runtimeOptions, region, functionType);
     }
   }
 
@@ -40,19 +38,49 @@ function createHttpsForEndpoint(
   module: any,
   endpoint: EndpointInfo,
   runtimeOptions: any,
-  region?: string
+  region?: string,
+  functionType?: EnumFirebaseFunctionType
 ): HttpsFunction {
   const { runWith } = require('firebase-functions/v1');
-  
+
   const run = runWith(runtimeOptions ?? {});
   const runRegion = region ? run.region(region) : run;
 
   // Set up the Express server once, outside the request handler
   const expressServer: Express = express();
   expressServer.use(compression());
+  expressServer.use(express.json()); // Add JSON parsing
 
   // Create a focused route for this specific endpoint
-  const method = endpoint.httpMethod.toString().toLowerCase();
+  // Convert RequestMethod enum to string properly
+  const RequestMethod = require('@nestjs/common').RequestMethod;
+  let method: string;
+  switch (endpoint.httpMethod) {
+    case RequestMethod.GET:
+      method = 'get';
+      break;
+    case RequestMethod.POST:
+      method = 'post';
+      break;
+    case RequestMethod.PUT:
+      method = 'put';
+      break;
+    case RequestMethod.PATCH:
+      method = 'patch';
+      break;
+    case RequestMethod.DELETE:
+      method = 'delete';
+      break;
+    case RequestMethod.HEAD:
+      method = 'head';
+      break;
+    case RequestMethod.OPTIONS:
+      method = 'options';
+      break;
+    default:
+      method = 'all';
+  }
+
   const path = endpoint.path || '/';
 
   // Register the route for this endpoint using Express routing
@@ -68,35 +96,80 @@ function createHttpsForEndpoint(
   return runRegion.https.onRequest(expressServer);
 }
 
-function createCallableForEndpoint(
+function createCallableHttpWrapperForEndpoint(
   module: any,
   endpoint: EndpointInfo,
   runtimeOptions: any,
-  region?: string
+  region?: string,
+  functionType?: EnumFirebaseFunctionType
 ): any {
   const { runWith } = require('firebase-functions/v1');
-  
   const run = runWith(runtimeOptions ?? {});
   const runRegion = region ? run.region(region) : run;
 
-  return runRegion.https.onCall(async (data: any, context: any) => {
-    // Create NestJS application context
+  const expressServer: Express = express();
+  expressServer.use(express.json());
+  expressServer.use(compression());
+
+  expressServer.post('*', async (req: any, res: any) => {
     const { NestFactory } = require('@nestjs/core');
     const app = await NestFactory.createApplicationContext(module);
     await app.init();
-    
     try {
-      // Get the controller instance and call the specific method
       const controllerInstance = app.get(endpoint.controllerClass);
-      // For callable functions, pass the data directly and the context
-      // Callable functions don't follow HTTP semantics, so we treat all as equivalent to POST
-      const result = await controllerInstance[endpoint.methodName](data, context);
-      
+      const body: any = (req as any).body;
+      const payload = body && typeof body === 'object' && 'data' in body ? body.data : body;
+
+      // Handle path parameters extraction based on function type
+      if (endpoint.path && endpoint.path.includes(':')) {
+        const paramMatches = endpoint.path.match(/:(\w+)/g);
+        if (paramMatches) {
+          const paramNames = paramMatches.map((match) => match.substring(1));
+
+          if (functionType === EnumFirebaseFunctionType.CALLABLE) {
+            // For CALLABLE: extract parameters from payload
+            const paramValues: any[] = [];
+            const bodyData = { ...payload };
+
+            paramNames.forEach((paramName) => {
+              if (payload && typeof payload === 'object' && paramName in payload) {
+                paramValues.push(payload[paramName]);
+                delete bodyData[paramName];
+              } else {
+                throw new Error(`Missing required parameter '${paramName}' in payload`);
+              }
+            });
+
+            const result = await controllerInstance[endpoint.methodName](...paramValues, bodyData);
+            if (!res.headersSent) {
+              res.json({ result });
+            }
+          } else {
+            // For HTTPS: use standard parameter handling
+            const result = await controllerInstance[endpoint.methodName](payload, req);
+            if (!res.headersSent) {
+              res.json({ result });
+            }
+          }
+        } else {
+          const result = await controllerInstance[endpoint.methodName](payload, req);
+          if (!res.headersSent) {
+            res.json({ result });
+          }
+        }
+      } else {
+        const result = await controllerInstance[endpoint.methodName](payload, req);
+        if (!res.headersSent) {
+          res.json({ result });
+        }
+      }
+
       await app.close();
-      return result;
-    } catch (error) {
+    } catch (error: any) {
       await app.close();
-      throw error;
+      res.status(500).json({ error: error?.message || 'Internal server error' });
     }
   });
+
+  return runRegion.https.onRequest(expressServer);
 }
