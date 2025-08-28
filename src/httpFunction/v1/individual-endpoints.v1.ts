@@ -47,23 +47,25 @@ function createHttpsForEndpoint(
   const run = runWith(runtimeOptions ?? {});
   const runRegion = region ? run.region(region) : run;
 
-  return runRegion.https.onRequest(async (request: Request, response: Response) => {
-    const expressServer: Express = express();
-    expressServer.use(compression());
-    
-    // Create a focused route for this specific endpoint
-    const method = endpoint.httpMethod.toString().toLowerCase();
-    const path = endpoint.path || '/';
-    
-    // Register the route for this endpoint using Express routing
-    (expressServer as any)[method](path, async (req: Request, res: Response) => {
-      // Delegate to NestJS handler via createFunction
-      await createFunction(module, expressServer);
-    });
-    
-    // Pass all requests to Express for routing
-    expressServer(request, response);
+  // Set up the Express server once, outside the request handler
+  const expressServer: Express = express();
+  expressServer.use(compression());
+
+  // Create a focused route for this specific endpoint
+  const method = endpoint.httpMethod.toString().toLowerCase();
+  const path = endpoint.path || '/';
+
+  // Register the route for this endpoint using Express routing
+  (expressServer as any)[method](path, async (req: Request, res: Response) => {
+    // Delegate to NestJS handler via createFunction
+    await createFunction(module, expressServer);
   });
+
+  // Call createFunction once during setup (not per request)
+  createFunction(module, expressServer);
+
+  // Pass all requests to Express for routing
+  return runRegion.https.onRequest(expressServer);
 }
 
 function createCallableForEndpoint(
