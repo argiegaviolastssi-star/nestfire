@@ -56,7 +56,7 @@ export async function handleModuleForCallable(
       throw new Error(`Controller ${controllerClass.name} does not have a handleCall method for callable function execution.`);
     }
   } catch (error) {
-    loadedCallableApps[moduleName] = null;
+    delete loadedCallableApps[moduleName];
     throw new Error(`Failed to handle callable function for module ${moduleName}: ${error}`);
   }
 }
