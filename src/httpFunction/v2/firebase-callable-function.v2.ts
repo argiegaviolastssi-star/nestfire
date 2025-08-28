@@ -16,9 +16,8 @@ export function createFirebaseCallableV2(module: any, callableOptions?: IFirebas
     deleteImportedControllers(module);
   }
 
-  if (callableOptions?.removeControllerPrefix) {
-    removePathFromSingleController(module);
-  }
+  // Always remove path from single controller for V2 (equivalent to removeControllerPrefix: true)
+  removePathFromSingleController(module);
 
   return onCall(callableOptions ?? {}, async (request: any) => {
     return await handleModuleForCallable(module, request.data, request);

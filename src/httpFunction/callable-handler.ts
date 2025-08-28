@@ -33,33 +33,54 @@ export async function handleModuleForCallable(
       loadedCallableApps[moduleName] = app;
     }
 
-    // For callable functions, we need to find and execute the appropriate service method
-    // This is a simplified implementation - in practice, you might want to use a more
-    // sophisticated routing mechanism based on the data payload
-    
     // Get the first controller from the module
     const controllers = Reflect.getMetadata('controllers', module) || [];
     if (controllers.length === 0) {
       throw new Error('No controllers found in the module for callable function execution.');
     }
 
-    // For now, we'll assume the controller has a method that handles callable requests
-    // This could be enhanced to support routing based on data payload
     const controllerClass = controllers[0];
     const controllerInstance = app.get(controllerClass);
     
-    // Look for a method named 'handleCall' or similar
-    // This is a convention that could be enhanced with decorators
+    // Try to find a handleCall method first (for backward compatibility)
     if (typeof controllerInstance.handleCall === 'function') {
       return await controllerInstance.handleCall(data, context);
-    } else {
-      throw new Error(
-        `Controller ${controllerClass.name} does not have a handleCall method for callable function execution.\n` +
-        `To resolve this, implement a method named 'handleCall' in your controller with the following signature:\n\n` +
-        `  async handleCall(data: any, context: any): Promise<any> {\n    // your logic here\n  }\n\n` +
-        `See documentation: https://example.com/docs/callable-functions#handleCall`
-      );
     }
+    
+    // If no handleCall method, look for the action specified in the data
+    // This allows for more flexible callable function routing
+    if (data && typeof data === 'object' && data.action && typeof data.action === 'string') {
+      const methodName = data.action;
+      if (typeof controllerInstance[methodName] === 'function') {
+        return await controllerInstance[methodName](data, context);
+      } else {
+        throw new Error(
+          `Controller ${controllerClass.name} does not have a method named '${methodName}' for callable function execution.`
+        );
+      }
+    }
+    
+    // If there's only one method (excluding constructor), use that
+    const prototype = controllerClass.prototype;
+    const methodNames = Object.getOwnPropertyNames(prototype)
+      .filter(name => name !== 'constructor' && typeof prototype[name] === 'function');
+    
+    if (methodNames.length === 1) {
+      const methodName = methodNames[0];
+      return await controllerInstance[methodName](data, context);
+    }
+    
+    // Fallback error message with helpful guidance
+    throw new Error(
+      `Controller ${controllerClass.name} does not have a handleCall method for callable function execution.\n` +
+      `To resolve this, you can:\n` +
+      `1. Implement a method named 'handleCall' in your controller with the signature:\n` +
+      `   async handleCall(data: any, context: any): Promise<any> { /* your logic here */ }\n\n` +
+      `2. Or pass an 'action' field in your data payload to specify which method to call:\n` +
+      `   const result = await callable({ action: 'methodName', ...otherData });\n\n` +
+      `3. Or use 'exportSeparately: true' to create individual callable functions for each method.\n\n` +
+      `Available methods in controller: ${methodNames.join(', ')}`
+    );
   } catch (error) {
     delete loadedCallableApps[moduleName];
     throw new Error(`Failed to handle callable function for module ${moduleName}: ${error}`);

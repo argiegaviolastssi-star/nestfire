@@ -1,8 +1,7 @@
 import express from 'express';
-import { Express } from 'express-serve-static-core';
+import { Express, Request, Response } from 'express-serve-static-core';
 import compression from 'compression';
 import { HttpsFunction, onRequest } from 'firebase-functions/v2/https';
-import { createFunction } from '../create-function';
 import { EndpointInfo } from '../scan-endpoints';
 import { EnumFirebaseFunctionType } from '../../enums/firebase-function-type.enum';
 
@@ -50,7 +49,7 @@ function createHttpsForEndpoint(
   // Register only the specific route handler for this endpoint
   // This ensures only the intended route is exposed
   const { NestFactory } = require('@nestjs/core');
-  expressServer[method](path, async (req, res) => {
+  (expressServer as any)[method](path, async (req: Request, res: Response) => {
     // Create NestJS application context
     const app = await NestFactory.createApplicationContext(module);
     await app.init();
@@ -64,12 +63,12 @@ function createHttpsForEndpoint(
         res.json(result);
       }
       await app.close();
-    } catch (error) {
+    } catch (error: any) {
       await app.close();
-      res.status(500).json({ error: error.message || 'Internal server error' });
+      res.status(500).json({ error: error?.message || 'Internal server error' });
     }
   });
-  return onRequest(httpsOptions ?? {}, (req, res) => {
+  return onRequest(httpsOptions ?? {}, (req: Request, res: Response) => {
     expressServer(req, res);
   });
 }
@@ -90,6 +89,8 @@ function createCallableForEndpoint(
     try {
       // Get the controller instance and call the specific method
       const controllerInstance = app.get(endpoint.controllerClass);
+      // For callable functions, pass the data directly and the request context
+      // Callable functions don't follow HTTP semantics, so we treat all as equivalent to POST
       const result = await controllerInstance[endpoint.methodName](request.data, request);
       
       await app.close();

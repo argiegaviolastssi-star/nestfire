@@ -11,7 +11,7 @@ import { IFirebaseConfigDeployment } from '../interfaces/firebase-config-deploym
 export function getUrlPrefix(module: any, configuration: IFirebaseConfigDeployment): string {
   if (
     configuration.version === EnumFirebaseFunctionVersion.V1 ||
-    (configuration.version === EnumFirebaseFunctionVersion.V2 && configuration?.configV2?.removeControllerPrefix)
+    configuration.version === EnumFirebaseFunctionVersion.V2 // Always true for V2
   ) {
     const controllers = Reflect.getMetadata('controllers', module) || [];
     if (controllers.length === 1) {

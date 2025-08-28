@@ -58,12 +58,22 @@ export function scanModuleEndpoints(module: any): EndpointInfo[] {
  * @param controllerName - Name of the controller class
  * @param methodName - Name of the method
  * @param httpMethod - HTTP method type
- * @returns Generated function name
+ * @returns Generated function name in kebab-case format
  */
 function generateFunctionName(controllerName: string, methodName: string, httpMethod: RequestMethod): string {
   // Remove 'Controller' suffix if present
   const cleanControllerName = controllerName.replace(/Controller$/, '');
   
-  // Create camelCase function name
-  return `${cleanControllerName.toLowerCase()}${methodName.charAt(0).toUpperCase()}${methodName.slice(1)}`;
+  // Convert controller name to kebab-case
+  const controllerKebab = cleanControllerName
+    .replace(/([a-z])([A-Z])/g, '$1-$2') // Insert dash between lowercase and uppercase
+    .toLowerCase();
+  
+  // Convert method name to kebab-case
+  const methodKebab = methodName
+    .replace(/([a-z])([A-Z])/g, '$1-$2') // Insert dash between lowercase and uppercase
+    .toLowerCase();
+  
+  // Create kebab-case function name
+  return `${controllerKebab}-${methodKebab}`;
 }

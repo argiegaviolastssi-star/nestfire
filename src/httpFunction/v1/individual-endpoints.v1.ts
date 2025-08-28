@@ -88,6 +88,8 @@ function createCallableForEndpoint(
     try {
       // Get the controller instance and call the specific method
       const controllerInstance = app.get(endpoint.controllerClass);
+      // For callable functions, pass the data directly and the context
+      // Callable functions don't follow HTTP semantics, so we treat all as equivalent to POST
       const result = await controllerInstance[endpoint.methodName](data, context);
       
       await app.close();
