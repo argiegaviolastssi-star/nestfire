@@ -162,6 +162,47 @@ Options: [HttpsOptions](https://firebase.google.com/docs/reference/functions/2nd
 @FirebaseHttps(EnumFirebaseFunctionVersion.V2, { memory: '256MiB' })
 ```
 
+### Function Types (NEW!)
+
+You can now specify the type of Firebase function to create:
+
+- **HTTPS Functions** (default): Traditional HTTP endpoints accessible via REST API
+- **Callable Functions**: Functions that can be called directly from Firebase SDK clients
+
+```ts
+import { EnumFirebaseFunctionType } from 'nestfire';
+
+// Callable Function - called from Firebase SDK
+@FirebaseHttps(EnumFirebaseFunctionVersion.V2, { 
+  functionType: EnumFirebaseFunctionType.CALLABLE,
+  memory: '256MiB' 
+})
+
+// HTTPS Function - traditional REST API (default behavior)
+@FirebaseHttps(EnumFirebaseFunctionVersion.V2, { 
+  functionType: EnumFirebaseFunctionType.HTTPS,
+  memory: '256MiB' 
+})
+```
+
+### Individual Endpoint Export (NEW!)
+
+Export each controller method as a separate Firebase function:
+
+```ts
+// Instead of one function for the entire module, create one function per endpoint
+@FirebaseHttps(EnumFirebaseFunctionVersion.V2, { 
+  exportSeparately: true,
+  functionType: EnumFirebaseFunctionType.HTTPS, // or CALLABLE
+  memory: '256MiB' 
+})
+```
+
+This will create individual functions like:
+- `usersGetUsers` for `GET /users`
+- `usersCreateUser` for `POST /users`
+- `usersGetUserById` for `GET /users/:id`
+
 ### Example
 ```ts
 import { Module } from '@nestjs/common';
@@ -176,6 +217,63 @@ import { EnumFirebaseFunctionVersion, FirebaseHttps } from 'nestfire';
   exports: [BookService],
 })
 export class BookModule {}
+```
+
+#### Callable Function Controller Setup
+
+For callable functions, your controller should have a `handleCall` method:
+
+```ts
+@Controller('calculator')
+class CalculatorController {
+  async handleCall(data: { operation: string; a: number; b: number }, context: any) {
+    const { operation, a, b } = data;
+    switch (operation) {
+      case 'add': return { result: a + b };
+      case 'subtract': return { result: a - b };
+      default: throw new Error('Unsupported operation');
+    }
+  }
+}
+
+@FirebaseHttps(EnumFirebaseFunctionVersion.V2, { 
+  functionType: EnumFirebaseFunctionType.CALLABLE,
+  memory: '256MiB' 
+})
+@Module({
+  controllers: [CalculatorController],
+})
+export class CalculatorModule {}
+```
+
+#### Client-Side Usage
+
+**Calling Callable Functions from Firebase SDK:**
+
+```javascript
+import { getFunctions, httpsCallable } from 'firebase/functions';
+
+const functions = getFunctions();
+const calculator = httpsCallable(functions, 'calculator');
+
+const result = await calculator({ 
+  operation: 'add', 
+  a: 5, 
+  b: 3 
+});
+console.log(result.data); // { result: 8 }
+```
+
+**Calling Individual HTTPS Functions:**
+
+```javascript
+// Individual endpoints are accessible as separate functions
+fetch('https://region-project.cloudfunctions.net/usersGetUsers')
+fetch('https://region-project.cloudfunctions.net/usersCreateUser', {
+  method: 'POST',
+  body: JSON.stringify({ name: 'John' }),
+  headers: { 'Content-Type': 'application/json' }
+})
 ```
 
 > **Note:** You can deploy with the command:  `firebase deploy --only functions`
