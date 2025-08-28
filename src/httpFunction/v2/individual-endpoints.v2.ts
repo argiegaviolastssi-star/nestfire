@@ -47,13 +47,28 @@ function createHttpsForEndpoint(
   const method = endpoint.httpMethod.toString().toLowerCase();
   const path = endpoint.path || '/';
 
-  // Create the NestJS function handlers on the express app
-  // (Assume createFunction registers all necessary routes/middleware)
-  createFunction(module, expressServer);
-
-  // Optionally, ensure only the specific route is exposed
-  // (If createFunction registers more routes, you may want to restrict here)
-
+  // Register only the specific route handler for this endpoint
+  // This ensures only the intended route is exposed
+  const { NestFactory } = require('@nestjs/core');
+  expressServer[method](path, async (req, res) => {
+    // Create NestJS application context
+    const app = await NestFactory.createApplicationContext(module);
+    await app.init();
+    try {
+      // Get the controller instance and call the specific method
+      const controllerInstance = app.get(endpoint.controllerClass);
+      // Pass req and res, or map req to method arguments as needed
+      const result = await controllerInstance[endpoint.methodName](req, res);
+      // If the controller method does not handle res, send result
+      if (!res.headersSent) {
+        res.json(result);
+      }
+      await app.close();
+    } catch (error) {
+      await app.close();
+      res.status(500).json({ error: error.message || 'Internal server error' });
+    }
+  });
   return onRequest(httpsOptions ?? {}, (req, res) => {
     expressServer(req, res);
   });
