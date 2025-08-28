@@ -39,7 +39,7 @@ function validateRegion(region: string): void {
   if (!region) {
     return;
   }
-  if (!Array < (typeof SUPPORTED_REGIONS).includes(region)) {
+  if (!(SUPPORTED_REGIONS as readonly string[]).includes(region)) {
     throw new Error(`Unsupported region: ${region}.`);
   }
 }
