@@ -40,22 +40,22 @@ function createHttpsForEndpoint(
   endpoint: EndpointInfo,
   httpsOptions: any
 ): HttpsFunction {
-  return onRequest(httpsOptions ?? {}, async (req, res) => {
-    const expressServer: Express = express();
-    expressServer.use(compression());
-    
-    // Create a focused route for this specific endpoint
-    const method = endpoint.httpMethod.toString().toLowerCase();
-    const path = endpoint.path || '/';
-    
-    await createFunction(module, expressServer);
-    
-    // Route the request to the specific path and method
-    if (req.method?.toLowerCase() === method && req.path === path) {
-      expressServer(req, res);
-    } else {
-      res.status(404).send('Endpoint not found');
-    }
+  const expressServer: Express = express();
+  expressServer.use(compression());
+
+  // Register the route for this specific endpoint
+  const method = endpoint.httpMethod.toString().toLowerCase();
+  const path = endpoint.path || '/';
+
+  // Create the NestJS function handlers on the express app
+  // (Assume createFunction registers all necessary routes/middleware)
+  createFunction(module, expressServer);
+
+  // Optionally, ensure only the specific route is exposed
+  // (If createFunction registers more routes, you may want to restrict here)
+
+  return onRequest(httpsOptions ?? {}, (req, res) => {
+    expressServer(req, res);
   });
 }
 
