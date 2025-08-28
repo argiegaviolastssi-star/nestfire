@@ -55,14 +55,14 @@ function createHttpsForEndpoint(
     const method = endpoint.httpMethod.toString().toLowerCase();
     const path = endpoint.path || '/';
     
-    await createFunction(module, expressServer);
+    // Register the route for this endpoint using Express routing
+    (expressServer as any)[method](path, async (req: Request, res: Response) => {
+      // Delegate to NestJS handler via createFunction
+      await createFunction(module, expressServer);
+    });
     
-    // Route the request to the specific path and method
-    if (request.method?.toLowerCase() === method && request.path === path) {
-      expressServer(request, response);
-    } else {
-      response.status(404).send('Endpoint not found');
-    }
+    // Pass all requests to Express for routing
+    expressServer(request, response);
   });
 }
 
