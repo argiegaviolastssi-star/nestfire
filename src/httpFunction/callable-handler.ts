@@ -53,7 +53,12 @@ export async function handleModuleForCallable(
     if (typeof controllerInstance.handleCall === 'function') {
       return await controllerInstance.handleCall(data, context);
     } else {
-      throw new Error(`Controller ${controllerClass.name} does not have a handleCall method for callable function execution.`);
+      throw new Error(
+        `Controller ${controllerClass.name} does not have a handleCall method for callable function execution.\n` +
+        `To resolve this, implement a method named 'handleCall' in your controller with the following signature:\n\n` +
+        `  async handleCall(data: any, context: any): Promise<any> {\n    // your logic here\n  }\n\n` +
+        `See documentation: https://example.com/docs/callable-functions#handleCall`
+      );
     }
   } catch (error) {
     delete loadedCallableApps[moduleName];
