@@ -19,9 +19,8 @@ export function createFirebaseHttpsV2(module: any, httpsOptions?: IFirebaseHttps
     deleteImportedControllers(module);
   }
 
-  if (httpsOptions?.removeControllerPrefix) {
-    removePathFromSingleController(module);
-  }
+  // Always remove path from single controller for V2 (equivalent to removeControllerPrefix: true)
+  removePathFromSingleController(module);
 
   const expressServer: Express = express();
   expressServer.use(compression());
