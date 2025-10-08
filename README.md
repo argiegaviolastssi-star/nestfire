@@ -689,6 +689,34 @@ npm run build   # Verify TypeScript compilation
 
 <br>
 
+## 🚀 Release Instructions
+
+To create a new release of NestFire:
+
+1. Create and push a git tag:
+   ```bash
+   git tag v1.0.1
+   git push origin v1.0.1
+   ```
+
+2. Build the project:
+   ```bash
+   npm run build
+   ```
+
+3. Create the package:
+   ```bash
+   npm pack
+   ```
+
+4. Create a new release in GitHub:
+   - Go to the GitHub repository
+   - Click "Releases" → "Create a new release"
+   - Select the tag created (e.g., v1.0.1)
+   - Upload the generated `.tgz` file from the `dist` folder
+
+<br>
+
 ## 📝 License
 
 MIT © Felipe Osano
